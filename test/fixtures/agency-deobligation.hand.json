@@ -1,0 +1,34 @@
+{
+  "what": "An ordinary deobligation. One row is negative and every row is smaller in magnitude than the total, which is the shape the real recorded data takes.",
+  "notRecorded": "Hand built. Not a recorded API response.",
+  "rows": [
+    {
+      "name": "BUYER ONE",
+      "code": "001",
+      "id": "1",
+      "amount": 900
+    },
+    {
+      "name": "BUYER TWO",
+      "code": "002",
+      "id": "2",
+      "amount": 200
+    },
+    {
+      "name": "BUYER THREE",
+      "code": "003",
+      "id": "3",
+      "amount": -100
+    }
+  ],
+  "arithmetic": {
+    "total": 1000,
+    "topShare": 0.9,
+    "topSharePercentText": "90.0 percent",
+    "herfindahl": 0.86,
+    "herfindahlWorking": "0.9 squared is 0.81, 0.2 squared is 0.04, and -0.1 squared is 0.01, which sum to 0.86. Squaring removes the sign, which is why one release does not make the index meaningless.",
+    "expected": "Both figures are published. A negative row is not on its own a reason to suppress anything, and the count of negative rows is shown beside the panel.",
+    "negativeRowCount": 1,
+    "floatNote": "This set does carry a residue: the computed index is 0.8600000000000001, a few parts in ten to the sixteenth above the decimal answer. The test asserts closeness and asserts the residue is there, for the same reason the rollup panel publishes its one cent delta rather than rounding it away."
+  }
+}

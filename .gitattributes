@@ -1,0 +1,12 @@
+# Normalise to LF in the working tree on every OS, so the generated typeahead
+# index and every committed fixture hash identically everywhere and
+# `npm run index:check` is a real sha256 check rather than a line ending diff.
+* text=auto eol=lf
+
+# Generated data. Named explicitly so a future .gitattributes edit cannot
+# quietly drop them out of the normalisation above.
+src/data/*.json text eol=lf
+
+# Binary assets.
+*.png binary
+*.bin binary

@@ -1,0 +1,9 @@
+{
+  "what": "An empty result set. The source returned no rows for this fiscal year and award type set.",
+  "notRecorded": "Hand built. Not a recorded API response.",
+  "rows": [],
+  "arithmetic": {
+    "total": 0,
+    "expected": "No share, no index, no zero and no NaN. Both panels report available false and print the no rows sentence in place of a figure."
+  }
+}

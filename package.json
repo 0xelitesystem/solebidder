@@ -1,0 +1,57 @@
+{
+  "name": "solebidder",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Type a federal contractor and see who actually buys from it, how concentrated that book is, and how much of it was awarded with exactly one bidder. Every figure is federal prime award obligations recorded against one parent UEI and its registered child UEIs for one named fiscal year, fetched live from USAspending and badged with the endpoint, the filter method and the source as-of date.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "index.html",
+    "src",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\"",
+    "build": "node scripts/build.mjs",
+    "build:check": "node scripts/build.mjs --check",
+    "gates": "node scripts/gates.mjs",
+    "gates:selftest": "node scripts/gates.mjs --selftest",
+    "gate:badges": "node scripts/gate-badges.mjs",
+    "gate:units": "node scripts/gate-units.mjs",
+    "gate:vocabulary": "node scripts/gate-vocabulary.mjs",
+    "gate:contrast": "node scripts/gate-contrast.mjs",
+    "gate:fcp": "node scripts/gate-fcp.mjs",
+    "measure:fcp": "node scripts/measure-fcp.mjs",
+    "measure:a11y": "node scripts/measure-a11y.mjs",
+    "measure:a11y:selftest": "node scripts/measure-a11y.mjs --selftest",
+    "index:refresh": "node scripts/build-typeahead-index.mjs",
+    "index:check": "node scripts/build-typeahead-index.mjs --check",
+    "verify": "npm test && npm run gates && npm run build:check"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "keywords": [
+    "usaspending",
+    "federal-contracts",
+    "government-spending",
+    "sole-source",
+    "customer-concentration",
+    "herfindahl",
+    "uei",
+    "provenance",
+    "zero-dependency",
+    "static-site"
+  ],
+  "author": "0xelitesystem",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xelitesystem/solebidder.git"
+  },
+  "homepage": "https://0xelitesystem.github.io/solebidder/",
+  "bugs": {
+    "url": "https://github.com/0xelitesystem/solebidder/issues"
+  }
+}

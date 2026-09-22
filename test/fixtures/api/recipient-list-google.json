@@ -1,0 +1,251 @@
+{
+ "page_metadata": {
+  "page": 1,
+  "total": 34,
+  "limit": 50,
+  "next": null,
+  "previous": null,
+  "hasNext": false,
+  "hasPrevious": false
+ },
+ "results": [
+  {
+   "id": "fa80ed82-5b68-ffce-2167-5a87592ebb7f-C",
+   "uei": "N424F1LU4FK3",
+   "name": "GOOGLE PUBLIC SECTOR LLC",
+   "recipient_level": "C",
+   "amount": 38980661.4
+  },
+  {
+   "id": "fa80ed82-5b68-ffce-2167-5a87592ebb7f-P",
+   "uei": "N424F1LU4FK3",
+   "name": "GOOGLE PUBLIC SECTOR LLC",
+   "recipient_level": "P",
+   "amount": 38978161.4
+  },
+  {
+   "id": "eddf926f-f4fe-e72c-14f1-ab22d5925171-C",
+   "uei": "NQV3T7DDKNT6",
+   "name": "GOOGLE LLC",
+   "recipient_level": "C",
+   "amount": 9145832.64
+  },
+  {
+   "id": "31c6f818-ed69-c057-8abf-3fc196b3b272-R",
+   "uei": null,
+   "name": "SHANAY JONES MINISTRIES GOOGLE VOICE NUMBER",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "6b7325d2-2df2-1022-c306-ea9bbe10db80-R",
+   "uei": null,
+   "name": "GOOGLE CONSTRUCTION SERVICES INC",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "f97098e7-444f-639e-c36f-cd5738603076-R",
+   "uei": null,
+   "name": "CLIP N CRITTERS LLC (GOOGLE WEB SITE)",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "4708c05f-7ce6-5404-afff-6d1d9232c408-R",
+   "uei": null,
+   "name": "GOOGLE TRANS",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "1291c97a-0a94-0fd1-9074-e1435608119d-R",
+   "uei": null,
+   "name": "GOOGLE CONSTRUCTION SERVICES",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "9bd621ad-39c7-fd19-03f2-b9f148aa7eba-R",
+   "uei": null,
+   "name": "CHRISTIAN GOOGLE",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "cfb518ad-aa53-4a9f-9578-aac6d206dd59-R",
+   "uei": null,
+   "name": "GOOGLEPLEX TECHNOLOGIES, LLC",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "bd94a99f-88cd-0dbb-6733-fb3397fc0438-R",
+   "uei": null,
+   "name": "CRYSTAL BRILEY DBA GOOGLE'S GIGGLES",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "8ec965f6-b7ed-6d37-9522-73c7c88861b8-R",
+   "uei": null,
+   "name": "CRYSTAL BRILEY DBA GOOGLE&#X2019;S GIGGLES DBA CRYSTAL BRILEY",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "5b2d32c0-0e15-300b-a0c1-a795e7d2ee6c-R",
+   "uei": null,
+   "name": "JUAN M GIL ESTRELLA DBA GOOGLE  PUBLISHING",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "3d040cf8-a4a3-ba04-f558-7ebee5917751-R",
+   "uei": null,
+   "name": "HKK LLC, PNW PACKGED FOOD & BEV GOOGLE GROUP",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "f46f713b-cf62-d0e7-fcc3-aa582dcab937-R",
+   "uei": null,
+   "name": "GOOGLE ME ENT LLC",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "306f2623-32f5-e268-d7d4-4c26160f629d-R",
+   "uei": null,
+   "name": "PREVIOUSLY STORED BACKUP FROM GOOGLE DRIVE.",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "3257808a-b5ae-0a55-7ec8-a9d1836f2ae5-R",
+   "uei": null,
+   "name": "GOOGLE ME ADVERTISING",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "92020d2b-2f03-f2a2-c3aa-0216ae92ea17-R",
+   "uei": null,
+   "name": "GOOGLE ADS TRAINING CONSULTING LLC",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "28d76925-31cd-f323-215c-25d42fe47df8-R",
+   "uei": null,
+   "name": "GOOGLE & ASSOCIATES ACCOUNTING SERVICES",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "256b3d13-df2f-c464-4cb5-d6e196199a38-R",
+   "uei": null,
+   "name": "GOOGLE AD SENSE",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "377973ac-476e-5313-dcb9-daa3f10c93bf-R",
+   "uei": null,
+   "name": "GOOGLE PRICE",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "4027b948-84a1-913b-d2f1-f59afe637e8b-R",
+   "uei": null,
+   "name": "DRUMGOOGLE DUVAL",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "a46795af-76fd-27ae-a8b2-512edbdaf8e0-R",
+   "uei": null,
+   "name": "THE JEWISH GOOGLE CORP",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "eddf926f-f4fe-e72c-14f1-ab22d5925171-P",
+   "uei": "NQV3T7DDKNT6",
+   "name": "GOOGLE LLC",
+   "recipient_level": "P",
+   "amount": 0
+  },
+  {
+   "id": "e1af4d03-07f6-bbe2-35b0-aa140a0062dd-R",
+   "uei": null,
+   "name": "OOGLES N GOOGLES OF GEORGIA, LLC",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "7ec76400-e8cd-9abc-97e9-f48432ddedaa-R",
+   "uei": null,
+   "name": "HTTPS://DOCS.GOOGLE.COM/DOCUMENT/D/1T0PALGHXTUJASCVN1ZWVRY7GSJPJ4KRB3S_EKDKZP-U/",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "d7afb814-6fc0-9082-dd9f-d6bf6f1ce122-R",
+   "uei": null,
+   "name": "ATTRACT GOOGLE CORP",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "e495b8a7-bca7-fcc1-fd72-5f99d73db3b8-R",
+   "uei": null,
+   "name": "SHANAY JONES MINISTRIES DBA SHANAY JONES MINISTRIES GOOGLE VOICE NUMBER",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "ff5d619d-dc36-0aef-22f5-bcc1bdd44bfe-R",
+   "uei": null,
+   "name": "TOP OF GOOGLE-YAHOO-BING",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "b7bc5446-eb89-66ee-6205-b5d5f888ac12-R",
+   "uei": null,
+   "name": "CRYSTAL BRILEY DBA GOOGLE S GIGGLES DBA CRYSTAL BRILEY",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "96fe8f97-e84f-e6e1-7601-df4bbdcd9419-R",
+   "uei": null,
+   "name": "GOOGLE AND ASSOCIATES ACCOUNTING SERVICES",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "ac990893-11ef-48ca-aa42-b75839e53c30-R",
+   "uei": null,
+   "name": "OOGLES-N-GOOGLES",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "8634b34f-05f6-f218-c9e7-eb68f8dc9622-R",
+   "uei": null,
+   "name": "DRUMGOOGLE COUNSELING SERVICES, INC.",
+   "recipient_level": "R",
+   "amount": 0
+  },
+  {
+   "id": "5400fd52-7254-24e3-6721-3b06706366fc-R",
+   "uei": null,
+   "name": "GOOGLEPLEX, INC.",
+   "recipient_level": "R",
+   "amount": 0
+  }
+ ]
+}

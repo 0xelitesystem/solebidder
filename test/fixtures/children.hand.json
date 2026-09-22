@@ -1,0 +1,34 @@
+{
+  "what": "Hand built child entities for the rollup check, including one deobligation and a parent total that sits one cent away from the sum.",
+  "notRecorded": "Hand built. No real entity name or unique entity identifier appears here.",
+  "children": [
+    {
+      "uei": "AAAAAAAAAAAA",
+      "name": "CHILD ONE",
+      "obligations": 100.01
+    },
+    {
+      "uei": "BBBBBBBBBBBB",
+      "name": "CHILD TWO",
+      "obligations": 200.02
+    },
+    {
+      "uei": "CCCCCCCCCCCC",
+      "name": "CHILD THREE",
+      "obligations": 300.03
+    },
+    {
+      "uei": "DDDDDDDDDDDD",
+      "name": "CHILD FOUR",
+      "obligations": -0.06
+    }
+  ],
+  "arithmetic": {
+    "childSum": 600,
+    "parentReportedTotal": 599.99,
+    "delta": 0.01,
+    "negativeChildCount": 1,
+    "working": "100.01 plus 200.02 plus 300.03 less 0.06 is 600.00. The parent is reported at 599.99, so the difference is one cent and it is published rather than rounded away.",
+    "floatNote": "The four amounts sum to exactly 600 in double precision, but the delta against 599.99 comes out as 0.009999999999990905 rather than 0.01. The test asserts closeness at that scale and says why, which is the same reason the product publishes the delta instead of hiding it."
+  }
+}

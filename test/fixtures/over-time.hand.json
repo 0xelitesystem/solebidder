@@ -1,0 +1,16 @@
+{
+  "what": "Hand built fiscal year points for the year over year change, including a year with no awards at all.",
+  "notRecorded": "Hand built. Not a recorded API response.",
+  "points": [
+    { "fiscalYear": 2022, "obligations": 1000 },
+    { "fiscalYear": 2023, "obligations": 1200 },
+    { "fiscalYear": 2024, "obligations": 0 },
+    { "fiscalYear": 2025, "obligations": 600 }
+  ],
+  "arithmetic": {
+    "fy2022": "The first year in the set. There is no year before it, so no change is reported and no zero is shown.",
+    "fy2023": { "delta": 200, "share": 0.2, "direction": "increase", "working": "1200 less 1000 is 200, over 1000, which is 20 percent." },
+    "fy2024": { "delta": -1200, "share": 1, "direction": "decrease", "working": "0 less 1200 is -1200, and the magnitude over 1200 is exactly 1, a decrease of 100 percent. The direction is a word beside the figure because the figure is a magnitude." },
+    "fy2025": { "delta": 600, "direction": "increase", "expected": "The year before recorded no awards at all. There is no denominator, so no percentage is shown and the change is carried in dollars. It is never shown as zero and it is never shown as infinity." }
+  }
+}

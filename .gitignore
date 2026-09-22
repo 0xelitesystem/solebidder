@@ -1,0 +1,24 @@
+# Dependencies and build output. solebidder has zero runtime dependencies and
+# zero dev dependencies; this exists only so a stray local install can never be
+# committed.
+node_modules/
+*.tgz
+
+# Build and gate scratch. The shipped page is index.html at the repo ROOT and it
+# IS committed.
+.tmp/
+coverage/
+test-results/
+
+# Generated validation and capture artifacts
+*.local.json
+shot-*.png
+
+# Secrets, editor and OS noise
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

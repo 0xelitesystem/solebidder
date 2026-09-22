@@ -1,0 +1,21 @@
+{
+  "what": "An award set where one record carries no competition field at all, so the value share becomes a floor.",
+  "notRecorded": "Hand built. Not a recorded API response.",
+  "awardRows": [
+    { "awardId": "HAND-1001", "recipientName": "SUBJECT ENTITY", "awardValue": 400, "generatedInternalId": "hand_1001" },
+    { "awardId": "HAND-1002", "recipientName": "SUBJECT ENTITY", "awardValue": 600, "generatedInternalId": "hand_1002" }
+  ],
+  "awardDetails": [
+    { "generatedInternalId": "hand_1001", "awardId": "HAND-1001", "extentCompeted": "NOT COMPETED", "offersReceived": 1, "offersReceivedRaw": "1", "solicitationProcedures": "ONLY ONE SOURCE", "setAside": null, "solicitationIdentifier": null, "inconsistent": false }
+  ],
+  "arithmetic": {
+    "total": 1000,
+    "notCompetedValue": 400,
+    "soleBidderShare": 0.4,
+    "expected": "The denominator stays at the whole set, because the sentence the page prints names the whole set. HAND-1002 can never enter the numerator, so 40 percent is a floor for this set and the claim carries a note saying so in those words. One award is counted as carrying no competition field.",
+    "oneOfferNumerator": 1,
+    "oneOfferDenominator": 1,
+    "oneOfferShare": 1,
+    "fieldAbsentCount": 1
+  }
+}

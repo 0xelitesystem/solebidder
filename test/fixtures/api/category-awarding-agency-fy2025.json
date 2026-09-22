@@ -1,0 +1,91 @@
+{
+ "category": "awarding_agency",
+ "spending_level": "transactions",
+ "limit": 100,
+ "page_metadata": {
+  "page": 1,
+  "next": null,
+  "previous": null,
+  "hasNext": false,
+  "hasPrevious": false
+ },
+ "results": [
+  {
+   "id": 1173,
+   "code": "DOD",
+   "name": "Department of Defense",
+   "agency_slug": "department-of-defense",
+   "amount": 63941564049.57,
+   "total_outlays": null
+  },
+  {
+   "id": 862,
+   "code": "NASA",
+   "name": "National Aeronautics and Space Administration",
+   "agency_slug": "national-aeronautics-and-space-administration",
+   "amount": 682909341.09,
+   "total_outlays": null
+  },
+  {
+   "id": 766,
+   "code": "DHS",
+   "name": "Department of Homeland Security",
+   "agency_slug": "department-of-homeland-security",
+   "amount": 64994361.73,
+   "total_outlays": null
+  },
+  {
+   "id": 731,
+   "code": "DOT",
+   "name": "Department of Transportation",
+   "agency_slug": "department-of-transportation",
+   "amount": 28292991.91,
+   "total_outlays": null
+  },
+  {
+   "id": 252,
+   "code": "DOJ",
+   "name": "Department of Justice",
+   "agency_slug": "department-of-justice",
+   "amount": 11348556.54,
+   "total_outlays": null
+  },
+  {
+   "id": 614,
+   "code": "GSA",
+   "name": "General Services Administration",
+   "agency_slug": "general-services-administration",
+   "amount": 2826000.3,
+   "total_outlays": null
+  },
+  {
+   "id": 209,
+   "code": "DOI",
+   "name": "Department of the Interior",
+   "agency_slug": "department-of-the-interior",
+   "amount": 2616216,
+   "total_outlays": null
+  },
+  {
+   "id": 930,
+   "code": "DOE",
+   "name": "Department of Energy",
+   "agency_slug": "department-of-energy",
+   "amount": 0,
+   "total_outlays": null
+  },
+  {
+   "id": 700,
+   "code": "EPA",
+   "name": "Environmental Protection Agency",
+   "agency_slug": "environmental-protection-agency",
+   "amount": -306341.89,
+   "total_outlays": null
+  }
+ ],
+ "messages": [
+  "For searches, time period start and end dates are currently limited to an earliest date of 2007-10-01.  For data going back to 2000-10-01, use either the Custom Award Download feature on the website or one of our download or bulk_download API endpoints as listed on https://api.usaspending.gov/docs/endpoints. ",
+  "The following filters from the request were not used: {'subawards'}. See https://api.usaspending.gov/docs/endpoints for a list of appropriate filters",
+  "'subawards' will be deprecated in the future. Set ‘spending_level’ to ‘subawards’ instead. See documentation for more information. "
+ ]
+}

@@ -1,0 +1,7 @@
+{
+  "_comment": "Budgets for the claim boundary. Raising either number is a reviewed diff, on purpose, and every use is printed by gate-badges before the totals are compared.",
+  "_maxEstimated": "DESIGN 2.3. The ESTIMATED badge kind exists ONLY so that the gate can DETECT an attempt to publish an estimate. This budget is zero and it does not move. An estimate cannot physically reach the published page.",
+  "maxEstimated": 0,
+  "_maxChromeExceptions": "A page has a few digits that are not claims about the world, such as a version string. Pretending those are REPORTED would devalue the badge, so an element may instead carry data-claim-chrome with a stated reason. The budget is zero: this page has no such digit today, and the first one is a conversation rather than a commit.",
+  "maxChromeExceptions": 0
+}

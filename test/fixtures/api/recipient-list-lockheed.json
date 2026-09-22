@@ -1,0 +1,363 @@
+{
+ "page_metadata": {
+  "page": 1,
+  "total": 272,
+  "limit": 50,
+  "next": 2,
+  "previous": null,
+  "hasNext": true,
+  "hasPrevious": false
+ },
+ "results": [
+  {
+   "id": "b97d19b0-833c-8d8f-3a2c-157d04ea55ef-P",
+   "uei": "ZFN2JJXBLZT3",
+   "name": "LOCKHEED MARTIN CORP",
+   "recipient_level": "P",
+   "amount": 61964720403.63
+  },
+  {
+   "id": "6cf5fb1b-4988-d087-5dc1-70939d8fc6c4-C",
+   "uei": "G4KDGE4JFFK7",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 26411109437.82
+  },
+  {
+   "id": "779b3e3e-364f-7cbc-28a4-a2b4484b86f4-C",
+   "uei": "XFJMYSYFJEK4",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 15732614713.35
+  },
+  {
+   "id": "695d5739-ecc3-8484-ba2b-f9c8b4652a4a-C",
+   "uei": "H7PNSVNN5827",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 3087378573.01
+  },
+  {
+   "id": "6e7a895c-aa57-8600-2a8a-4e237f6213f6-C",
+   "uei": "FYHNA5WC8XD7",
+   "name": "LOCKHEED MARTIN CORP",
+   "recipient_level": "C",
+   "amount": 3072188721.99
+  },
+  {
+   "id": "d7df489c-5a15-3e1b-e7fa-0e93eb94a166-C",
+   "uei": "CWM4UN76ZQW8",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 2783921287.72
+  },
+  {
+   "id": "8a7abf83-bb31-a229-bb3a-31eb356988eb-C",
+   "uei": "KMEVRAKJVBD3",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 2419254121.86
+  },
+  {
+   "id": "894dbedb-aca8-9b52-0a82-3b0fd8713b6d-C",
+   "uei": "NGBVY5X32XZ5",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 1472012769.03
+  },
+  {
+   "id": "d7df489c-5a15-3e1b-e7fa-0e93eb94a166-P",
+   "uei": "CWM4UN76ZQW8",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "P",
+   "amount": 1390050560.7
+  },
+  {
+   "id": "46023044-eacc-a9ca-5b5e-ddc4673fc267-C",
+   "uei": "CQWLW9XRQTH5",
+   "name": "LOCKHEED MARTIN CORP",
+   "recipient_level": "C",
+   "amount": 1088340274.88
+  },
+  {
+   "id": "5ad7895c-192b-21cd-8baf-92c6dce0b593-C",
+   "uei": "HJP4JZG1FUL9",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 863556696.16
+  },
+  {
+   "id": "4051d253-67f0-30bd-2c7f-5eb539533924-C",
+   "uei": "SJDEB3MKJEW5",
+   "name": "LOCKHEED MARTIN CORP",
+   "recipient_level": "C",
+   "amount": 712211445.22
+  },
+  {
+   "id": "622f0580-7b5e-83b3-fedc-ebc6a2dee446-C",
+   "uei": "JKVWEPKJRR65",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 662031169.95
+  },
+  {
+   "id": "687c4cc7-53f1-d028-875d-2fc73de19122-C",
+   "uei": "H11HD5VHGHN3",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 661615440.8
+  },
+  {
+   "id": "5ad7895c-192b-21cd-8baf-92c6dce0b593-P",
+   "uei": "HJP4JZG1FUL9",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "P",
+   "amount": 601907051.35
+  },
+  {
+   "id": "687c4cc7-53f1-d028-875d-2fc73de19122-P",
+   "uei": "H11HD5VHGHN3",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "P",
+   "amount": 600185205.22
+  },
+  {
+   "id": "894dbedb-aca8-9b52-0a82-3b0fd8713b6d-P",
+   "uei": "NGBVY5X32XZ5",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "P",
+   "amount": 496965474.1
+  },
+  {
+   "id": "b302814a-8713-3c2f-8b0a-d0b8fc09976f-C",
+   "uei": "NMHFLDYJJ4C5",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 411352570.64
+  },
+  {
+   "id": "8a7abf83-bb31-a229-bb3a-31eb356988eb-P",
+   "uei": "KMEVRAKJVBD3",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "P",
+   "amount": 410735268
+  },
+  {
+   "id": "ea75ddee-2d00-ac7f-5e72-6f42d7c88c8c-C",
+   "uei": "KDT2YLB34NT6",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 406590579.92
+  },
+  {
+   "id": "c798c2aa-022b-9a6f-21c5-8060af622f14-C",
+   "uei": "LXKGXB75YKY6",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 378277000.8
+  },
+  {
+   "id": "0d5744ec-afe5-eea8-0593-f35c6a784084-C",
+   "uei": "XYUMJHQ1LJV5",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 269752171.76
+  },
+  {
+   "id": "49ba01f3-56b6-92fd-1814-1a521f21fe7e-C",
+   "uei": "MJENSFHZJP11",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 259748599.01
+  },
+  {
+   "id": "49ba01f3-56b6-92fd-1814-1a521f21fe7e-P",
+   "uei": "MJENSFHZJP11",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "P",
+   "amount": 259748599.01
+  },
+  {
+   "id": "ec40d701-df42-cef7-1247-f7307851485d-C",
+   "uei": "KFN4YJH98D51",
+   "name": "LOCKHEED MARTIN CORP",
+   "recipient_level": "C",
+   "amount": 253528759.17
+  },
+  {
+   "id": "ea75ddee-2d00-ac7f-5e72-6f42d7c88c8c-P",
+   "uei": "KDT2YLB34NT6",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "P",
+   "amount": 203584498.72
+  },
+  {
+   "id": "4de935fd-7eb9-654c-bd76-c9bd3a6943db-C",
+   "uei": "HDHVQ4EF8A89",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 188224963.8
+  },
+  {
+   "id": "622f0580-7b5e-83b3-fedc-ebc6a2dee446-P",
+   "uei": "JKVWEPKJRR65",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "P",
+   "amount": 187107128.27
+  },
+  {
+   "id": "0701db1f-8045-4e60-83f7-5fd066cdf38d-C",
+   "uei": "Z9B5HQ9HSTM5",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 175687657.85
+  },
+  {
+   "id": "ec40d701-df42-cef7-1247-f7307851485d-P",
+   "uei": "KFN4YJH98D51",
+   "name": "LOCKHEED MARTIN CORP",
+   "recipient_level": "P",
+   "amount": 152666528.17
+  },
+  {
+   "id": "0701db1f-8045-4e60-83f7-5fd066cdf38d-P",
+   "uei": "Z9B5HQ9HSTM5",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "P",
+   "amount": 122921753.85
+  },
+  {
+   "id": "ac6353b4-94a7-285e-be38-bd8a7af11663-C",
+   "uei": "VA1WWN5RAG77",
+   "name": "LOCKHEED MARTIN SERVICES, LLC",
+   "recipient_level": "C",
+   "amount": 109938747.26
+  },
+  {
+   "id": "95b69f1c-85e3-2053-a88c-84dad8edd667-C",
+   "uei": "LJDGB6CXKRK5",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 69893418.67
+  },
+  {
+   "id": "2acfbd75-26c2-0328-d37e-27e90dcef4db-C",
+   "uei": "WGB7GAKM7A68",
+   "name": "RAYTHEON/LOCKHEED MARTIN JAVELIN JV",
+   "recipient_level": "C",
+   "amount": 53367324.71
+  },
+  {
+   "id": "1b870f9e-28fd-fecf-a5bd-abb4bd04e550-C",
+   "uei": "PAMVUBYPXF48",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 46680337.91
+  },
+  {
+   "id": "2acfbd75-26c2-0328-d37e-27e90dcef4db-P",
+   "uei": "WGB7GAKM7A68",
+   "name": "RAYTHEON/LOCKHEED MARTIN JAVELIN JV",
+   "recipient_level": "P",
+   "amount": 41158722.91
+  },
+  {
+   "id": "4226b092-841c-d10e-ec60-4fedea619dbf-C",
+   "uei": "MAENKG4UJLK8",
+   "name": "LOCKHEED MARTIN CORP",
+   "recipient_level": "C",
+   "amount": 25254673.51
+  },
+  {
+   "id": "fb5a203d-4f4c-dd51-8b6d-b97b891ee3d8-C",
+   "uei": "MLZQLK2GQDW7",
+   "name": "LOCKHEED MARTIN INTEGRATED SYSTEMS, LLC",
+   "recipient_level": "C",
+   "amount": 24618705
+  },
+  {
+   "id": "81b6aa7b-b2d5-62f3-89db-70fbede89173-C",
+   "uei": "LTKKCY4XML96",
+   "name": "LOCKHEED MARTIN SERVICES, LLC",
+   "recipient_level": "C",
+   "amount": 23783354.58
+  },
+  {
+   "id": "5630d744-6d7b-3bff-9a76-fe728ed0174d-C",
+   "uei": "HNXKWMN1HJL6",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 23367529.82
+  },
+  {
+   "id": "3306c327-c59a-1581-3de2-01f8871c6ab0-P",
+   "uei": "JM5LPWYMNC33",
+   "name": "LOCKHEED MARTIN GLOBAL, INC",
+   "recipient_level": "P",
+   "amount": 23280696.38
+  },
+  {
+   "id": "3306c327-c59a-1581-3de2-01f8871c6ab0-C",
+   "uei": "JM5LPWYMNC33",
+   "name": "LOCKHEED MARTIN GLOBAL, INC",
+   "recipient_level": "C",
+   "amount": 23280696.38
+  },
+  {
+   "id": "cfdb99d6-7cee-3d75-33a3-219241d6fc30-C",
+   "uei": "NPTBVK49FNB3",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 20577536.05
+  },
+  {
+   "id": "4de935fd-7eb9-654c-bd76-c9bd3a6943db-P",
+   "uei": "HDHVQ4EF8A89",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "P",
+   "amount": 18879177.44
+  },
+  {
+   "id": "df802c95-7ba2-dfaf-9746-71ad56bc4487-P",
+   "uei": "GT2VX4J9UTR5",
+   "name": "RAYTHEON LOCKHEED MARTIN JAVELIN JOINT VENTURE",
+   "recipient_level": "P",
+   "amount": 12208601.8
+  },
+  {
+   "id": "33e33272-d9b8-a96b-8257-c06431b40826-C",
+   "uei": "JHLMULLPJ2V5",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 10202627.12
+  },
+  {
+   "id": "7f757335-f837-34de-9cdc-a72cb22b6906-C",
+   "uei": "KC5NMK7R6TN5",
+   "name": "LOCKHEED MARTIN CORPORATION",
+   "recipient_level": "C",
+   "amount": 8893835
+  },
+  {
+   "id": "2d3a87eb-892a-befd-7332-a870cbb5c892-C",
+   "uei": "XPNHKJDDSGJ5",
+   "name": "LOCKHEED MARTIN LOGISTIC SERVICES, INC.",
+   "recipient_level": "C",
+   "amount": 8254087.85
+  },
+  {
+   "id": "fb5a203d-4f4c-dd51-8b6d-b97b891ee3d8-P",
+   "uei": "MLZQLK2GQDW7",
+   "name": "LOCKHEED MARTIN INTEGRATED SYSTEMS, LLC",
+   "recipient_level": "P",
+   "amount": 8215000
+  },
+  {
+   "id": "a33e9ffb-f231-6771-1208-8895419c7c7d-C",
+   "uei": "E4FCLLSDMF86",
+   "name": "LOCKHEED MARTIN GLOBAL, INC.",
+   "recipient_level": "C",
+   "amount": 7509675.3
+  }
+ ]
+}

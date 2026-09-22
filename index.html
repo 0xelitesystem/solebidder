@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>solebidder</title>
+<meta name="description" content="Type a federal contractor and see who actually buys from it, how concentrated that book is, and how much of it was awarded with exactly one bidder. Every figure is fetched live from USAspending and carries the endpoint, the filter method and the source as of date.">
+<meta http-equiv="Content-Security-Policy" content="default-src &#39;self&#39;; connect-src &#39;self&#39; https://api.usaspending.gov; img-src &#39;self&#39; data:; style-src &#39;self&#39; &#39;unsafe-inline&#39;; script-src &#39;self&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+<link rel="canonical" href="https://0xelitesystem.github.io/solebidder/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="solebidder">
+<meta property="og:description" content="Who actually buys from a federal contractor, how concentrated that book is, and how much of it had exactly one bidder.">
+<meta property="og:url" content="https://0xelitesystem.github.io/solebidder/">
+<meta name="twitter:card" content="summary">
+<style>
+/* BUILD:TOKENS */
+:root {
+  --surface-base: #0a0a0a;
+  --surface-raised: #14171a;
+  --surface-accent-fill: #d4ff3a;
+  --text-ink: #e8ebef;
+  --text-ink-soft: #9aa3ad;
+  --text-accent: #d4ff3a;
+  --text-on-accent: #0a0a0a;
+  --text-badge-reported: #8ab4f8;
+  --text-badge-computed: #c2c8d0;
+  --text-badge-estimated: #f0b429;
+  --text-badge-never-claimed: #ffa8a8;
+  --line-rule: #2a2e33;
+  --line-focus-ring: #d4ff3a;
+  --ramp-obligations: #d4ff3a;
+  --ramp-award-value: #7d858f;
+  --ramp-share: #8ab4f8;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --surface-base: #e8ebef;
+    --surface-raised: #f7f8fa;
+    --surface-accent-fill: #2d6b00;
+    --text-ink: #0a0a0a;
+    --text-ink-soft: #4b5563;
+    --text-accent: #2d6b00;
+    --text-on-accent: #ffffff;
+    --text-badge-reported: #0f4c96;
+    --text-badge-computed: #243b53;
+    --text-badge-estimated: #7a4a00;
+    --text-badge-never-claimed: #8a3b00;
+    --line-rule: #c6ccd3;
+    --line-focus-ring: #2d6b00;
+    --ramp-obligations: #2d6b00;
+    --ramp-award-value: #111827;
+    --ramp-share: #0f4c96;
+    color-scheme: light;
+  }
+}
+:root[data-theme="dark"] {
+  --surface-base: #0a0a0a;
+  --surface-raised: #14171a;
+  --surface-accent-fill: #d4ff3a;
+  --text-ink: #e8ebef;
+  --text-ink-soft: #9aa3ad;
+  --text-accent: #d4ff3a;
+  --text-on-accent: #0a0a0a;
+  --text-badge-reported: #8ab4f8;
+  --text-badge-computed: #c2c8d0;
+  --text-badge-estimated: #f0b429;
+  --text-badge-never-claimed: #ffa8a8;
+  --line-rule: #2a2e33;
+  --line-focus-ring: #d4ff3a;
+  --ramp-obligations: #d4ff3a;
+  --ramp-award-value: #7d858f;
+  --ramp-share: #8ab4f8;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --surface-base: #e8ebef;
+  --surface-raised: #f7f8fa;
+  --surface-accent-fill: #2d6b00;
+  --text-ink: #0a0a0a;
+  --text-ink-soft: #4b5563;
+  --text-accent: #2d6b00;
+  --text-on-accent: #ffffff;
+  --text-badge-reported: #0f4c96;
+  --text-badge-computed: #243b53;
+  --text-badge-estimated: #7a4a00;
+  --text-badge-never-claimed: #8a3b00;
+  --line-rule: #c6ccd3;
+  --line-focus-ring: #2d6b00;
+  --ramp-obligations: #2d6b00;
+  --ramp-award-value: #111827;
+  --ramp-share: #0f4c96;
+  color-scheme: light;
+}
+/* /BUILD:TOKENS */
+
+/* ============================================================================================
+   THE INSTRUMENT. DESIGN 6.7 (mobile), 6.8 (WCAG AA by math), 6.9 (charts and typography).
+
+   DARK IS THE DEFAULT AND THE HERO. The generated token block above puts the house dark ground
+   on the bare :root and swaps to the light palette only under prefers-color-scheme: light or an
+   explicit data-theme. Both themes are complete, both are gated by scripts/gate-contrast.mjs,
+   and neither is a tint of the other.
+
+   THE ACCENT IS A BUDGET, NOT A COLOUR. The one saturated token in each theme is spent on
+   exactly three things: the one control that starts the work, the focus ring, and the single
+   most important figure on the page, which is the sole bidder share. The obligations ramp also
+   carries it, and that is a unit decision made in src/core/tokens.js rather than a decoration
+   decision made here. Everything else is ink, soft ink and one hairline rule.
+
+   NO COLOUR LITERAL APPEARS BELOW THIS LINE. Every colour is a custom property emitted from
+   src/core/tokens.js, which is the file the contrast gate computes against.
+   ============================================================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { color-scheme: dark light; -webkit-text-size-adjust: 100%; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--surface-base);
+  color: var(--text-ink);
+  font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+/* Every figure in this product is monospaced with tabular figures, so a column of dollars lines
+   up on the decimal point and a percentage that changes does not shift the words beside it. */
+.num, .mono, td.num, th.num, .fig-value, .cand-uei {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+td.num, th.num { text-align: right; }
+
+.skip { position: absolute; left: -9999px; top: 0; z-index: 10; padding: 0.6rem 1rem; background: var(--surface-raised); color: var(--text-ink); }
+.skip:focus { left: 0; }
+
+.wrap { max-width: 78rem; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+a { color: var(--text-accent); text-underline-offset: 0.18em; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+summary:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--line-focus-ring);
+  outline-offset: 2px;
+}
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+/* ---- the masthead. A wordmark and the one live date, nothing else. ---- */
+header.masthead {
+  display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem;
+  align-items: baseline; justify-content: space-between;
+  padding: 1.4rem 0 1rem;
+  border-bottom: 1px solid var(--line-rule);
+}
+h1.wordmark {
+  margin: 0;
+  font-size: 1rem; font-weight: 650; letter-spacing: 0.22em; text-transform: uppercase;
+}
+.masthead-meta { font-size: 0.76rem; color: var(--text-ink-soft); }
+.masthead-meta p { margin: 0; max-width: none; }
+
+/* ---- section headings. A quiet label over a hairline, not a title. ---- */
+h2.eyebrow {
+  font-size: 0.72rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--text-ink-soft);
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--line-rule);
+}
+h3 { font-size: 0.95rem; font-weight: 650; margin: 1.1rem 0 0.35rem; }
+p, li { max-width: 68ch; }
+.lede { font-size: clamp(1.05rem, 1.7vw, 1.25rem); line-height: 1.35; letter-spacing: -0.008em; font-weight: 500; color: var(--text-ink-soft); max-width: 46ch; margin: 0 0 1rem; text-wrap: balance; }
+.fine { font-size: 0.82rem; line-height: 1.5; }
+.soft { color: var(--text-ink-soft); }
+.warn { color: var(--text-badge-never-claimed); }
+
+/* ---- THE OPENING FRAME. DESIGN 5 second zero.
+   The hook, the search and the method. Nothing else is in the first screen, because a heading
+   over an empty region is a promise the page has not yet earned. ---- */
+section.frame {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
+  padding: 2.2rem 0 2.6rem;
+}
+.frame-method .kv { display: grid; grid-template-columns: max-content 1fr; gap: 0.5rem 1rem; margin: 0; font-size: 0.82rem; }
+.frame-method dt { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-ink-soft); padding-top: 0.15rem; }
+.frame-method dd { margin: 0; max-width: 44ch; }
+
+/* ---- THE HOOK. One live worked example, badged, before the visitor does anything. ---- */
+.hook {
+  border-top: 1px solid var(--line-rule);
+  border-bottom: 1px solid var(--line-rule);
+  padding: 1.1rem 0 1.2rem;
+  margin: 0 0 1.5rem;
+}
+.hook-label { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-ink-soft); margin: 0 0 0.6rem; }
+.hook-line { font-size: clamp(1.25rem, 2.6vw, 1.75rem); line-height: 1.3; font-weight: 550; letter-spacing: -0.015em; margin: 0 0 0.6rem; max-width: 34ch; text-wrap: balance; }
+.hook-line .fig { margin: 0; }
+.hook-line .fig-value { color: var(--text-accent); font-size: 1.5em; letter-spacing: -0.02em; }
+.hook .fig-prov, .hook .fig-note { font-size: 0.78rem; }
+.hook p { margin: 0 0 0.45rem; }
+.hook .nc-inline { margin: 0.7rem 0 0; }
+.hook-detail { margin: 1.25rem 0 0; padding-top: 1rem; border-top: 1px solid var(--line-rule); }
+.hook-detail p { margin: 0 0 0.5rem; }
+.hook-detail .fig-prov, .hook-detail .fig-note { font-size: 0.78rem; }
+
+/* ---- search and controls. A control is identified by its edge, so that edge is held against
+   the ground behind it under WCAG 1.4.11, which the decorative rule token does not reach. ---- */
+.search { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0 0 0.6rem; }
+.search input[type="search"] {
+  flex: 1 1 20rem;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--text-ink-soft);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-ink);
+  font: inherit;
+}
+/* THE BOUNDARY OF A CONTROL IS NOT DECORATION. A text field, a select and a button are
+   identified by their edge, so that edge is held at three to one against the ground behind it
+   under WCAG 1.4.11, which the rule token does not reach in the light theme. Decorative rules
+   between sections keep the softer token, because a section is identified by its heading. */
+button {
+  min-height: 44px;
+  padding: 0.5rem 1.2rem;
+  border: 1px solid var(--text-ink-soft);
+  border-radius: 8px;
+  background: var(--surface-accent-fill);
+  color: var(--text-on-accent);
+  font: inherit; font-weight: 650; letter-spacing: 0.02em;
+  cursor: pointer;
+}
+/* A ghost button is still a CONTROL, so its edge is held at three to one against the ground
+   behind it under WCAG 1.4.11. The decorative rule token does not reach that in either theme,
+   which is why it is the soft ink token here and the rule token only between sections. */
+button.ghost, button.chip {
+  background: var(--surface-base);
+  color: var(--text-ink);
+  border-color: var(--text-ink-soft);
+  font-weight: 500;
+}
+button.chip { min-height: 36px; padding: 0.25rem 0.7rem; font-size: 0.85rem; border-radius: 6px; }
+select {
+  min-height: 44px;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--text-ink-soft);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-ink);
+  font: inherit;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+ul.suggestions { list-style: none; padding: 0; margin: 0.5rem 0 0; display: grid; gap: 0.3rem; }
+ul.suggestions button { width: 100%; text-align: left; background: var(--surface-raised); color: var(--text-ink); border-color: var(--text-ink-soft); font-weight: 500; }
+.controls { display: flex; flex-wrap: wrap; gap: 0.9rem 1.5rem; align-items: start; margin-top: 0.9rem; }
+.controls .control { display: grid; gap: 0.25rem; font-size: 0.82rem; }
+.controls > .control, .controls > fieldset { flex: 1 1 17rem; min-width: 0; }
+.controls p { font-size: 0.78rem; line-height: 1.45; max-width: 38ch; margin: 0.4rem 0 0; }
+fieldset.award-set { border: 1px solid var(--line-rule); border-radius: 8px; padding: 0.2rem 0.8rem 0.4rem; margin: 0; }
+fieldset.award-set legend { padding: 0 0.35rem; color: var(--text-ink-soft); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; }
+.radio { display: inline-flex; align-items: center; gap: 0.4rem; margin-right: 1rem; min-height: 44px; font-size: 0.85rem; }
+
+/* ---- the entity chooser ---- */
+ul.candidates { list-style: none; padding: 0; margin: 0.75rem 0 0; display: grid; gap: 0.4rem; }
+button.cand-pick {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  width: 100%;
+  text-align: left;
+  background: var(--surface-raised);
+  color: var(--text-ink);
+  border-color: var(--text-ink-soft);
+  font-weight: 500;
+}
+.cand-uei { letter-spacing: 0.04em; font-size: 0.85rem; }
+.cand-level { font-size: 0.78rem; }
+
+/* ---- panels ---- */
+.panel {
+  border: 1px solid var(--line-rule);
+  border-radius: 10px;
+  padding: 1rem 1.15rem;
+  margin: 0 0 1rem;
+  background: var(--surface-raised);
+}
+.panel > :first-child { margin-top: 0; }
+.panel > :last-child { margin-bottom: 0; }
+.panel.refusal, .panel.failure { border-left: 3px solid var(--text-badge-never-claimed); }
+.panel.subject { padding: 0.8rem 1rem; }
+
+/* ---- figures and badges ---- */
+.fig {
+  display: inline-grid;
+  gap: 0.1rem 0.5rem;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  margin: 0.15rem 1.25rem 0.15rem 0;
+  vertical-align: top;
+}
+.fig-label {
+  grid-column: 1 / -1;
+  font-size: 0.68rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-ink-soft);
+}
+.fig-value { font-size: 1rem; }
+.fig-large .fig-value { font-size: 1.85rem; letter-spacing: -0.02em; }
+.fig-prov, .fig-note { grid-column: 1 / -1; font-size: 0.78rem; line-height: 1.5; max-width: 68ch; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 0.05rem 0.35rem;
+  white-space: nowrap;
+}
+.badge-mark { flex: none; }
+.badge-reported { color: var(--text-badge-reported); }
+.badge-computed { color: var(--text-badge-computed); }
+.badge-estimated { color: var(--text-badge-estimated); }
+.badge-never-claimed { color: var(--text-badge-never-claimed); }
+
+/* ---- the claim boundary ---- */
+.legend { list-style: none; padding: 0; display: grid; gap: 0.5rem; margin: 0; }
+.legend li { display: grid; grid-template-columns: 7rem 1fr; gap: 0.75rem; align-items: start; max-width: none; }
+.k { font-weight: 700; letter-spacing: 0.12em; font-size: 0.72rem; }
+.k-reported { color: var(--text-badge-reported); }
+.k-computed { color: var(--text-badge-computed); }
+.k-estimated { color: var(--text-badge-estimated); }
+.k-never { color: var(--text-badge-never-claimed); }
+ul.boundary { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.9rem; }
+li.nc {
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  gap: 0.5rem;
+  align-items: start;
+  border-left: 2px solid var(--line-rule);
+  padding-left: 0.7rem;
+  max-width: none;
+  break-inside: avoid;
+}
+.nc-badge { color: var(--text-badge-never-claimed); font-weight: 700; font-size: 0.85rem; }
+.nc-head { display: block; grid-column: 2; font-size: 0.92rem; }
+.nc-body { display: block; grid-column: 2; color: var(--text-ink-soft); font-size: 0.85rem; }
+.nc-inline {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem;
+  align-items: start;
+  border-left: 2px solid var(--line-rule);
+  padding-left: 0.7rem;
+  margin: 0.8rem 0 0;
+  color: var(--text-ink-soft);
+  font-size: 0.82rem;
+  max-width: 72ch;
+}
+.nc-inline-head { grid-column: 2; }
+.nc-inline-body { grid-column: 2; }
+
+/* ---- the reveal. The hero figure is the one place the accent is spent on a number. ---- */
+.reveal { font-size: 1.15rem; line-height: 1.35; max-width: 40ch; margin: 0 0 0.7rem; font-weight: 550; letter-spacing: -0.01em; }
+/* A figure inside a sentence keeps the sentence's own spacing. The gutter a figure carries in a
+   row of figures would otherwise open a visible hole between the number and the word after it. */
+.reveal .fig, .hook-line .fig { margin: 0 0.3rem 0 0; }
+.reveal-second { max-width: 38ch; font-size: 1.05rem; }
+.panel.hero .reveal { font-size: clamp(1.3rem, 2.3vw, 1.7rem); max-width: 48ch; text-wrap: pretty; }
+.panel.hero .reveal .fig-large .fig-value { color: var(--text-accent); font-size: 1.5em; }
+/* THE ANSWER PANEL IS THE WIDEST THING ON THE PAGE, so it is laid out across that width rather
+   than set as one narrow column with half a screen of ground beside it. The sentence and the
+   chart span; everything that corroborates them flows into two columns in document order, which
+   is row major and therefore the same order a screen reader and a keyboard already follow. */
+@media (min-width: 62rem) {
+  .panel.hero { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 clamp(1.5rem, 3vw, 2.5rem); align-items: start; }
+  .panel.hero > .reveal, .panel.hero > figure.chart, .panel.hero > .tablewrap { grid-column: 1 / -1; }
+  .panel.hero > .panel { grid-column: 1 / -1; }
+}
+.tallies, .subject-figures, .split-figures { display: flex; flex-wrap: wrap; gap: 0.3rem 1.5rem; margin: 0.8rem 0; }
+.subject-headline { font-size: 1rem; margin-top: 0; }
+.subject-sentence { font-size: 0.88rem; }
+
+/* ---- charts ---- */
+figure.chart { margin: 1.1rem 0 0; }
+.chart-caption { font-size: 0.85rem; color: var(--text-ink-soft); max-width: 72ch; margin-bottom: 0.45rem; }
+.chart-plot {
+  background: var(--surface-base);
+  border: 1px solid var(--line-rule);
+  border-radius: 8px;
+  padding: 0.5rem;
+  overflow-x: auto;
+}
+.chart-svg { display: block; width: 100%; height: auto; min-width: 19rem; }
+.chart-svg:focus-visible { outline: 2px solid var(--line-focus-ring); outline-offset: 2px; }
+.chart-live { min-height: 1.4rem; font-size: 0.85rem; color: var(--text-ink); }
+.chart-hint { font-size: 0.8rem; }
+.chart-table-toggle { margin: 0.25rem 0 0.6rem; }
+
+.mark.ramp-obligations { fill: var(--ramp-obligations); }
+.mark.ramp-award-value { fill: var(--ramp-award-value); }
+.mark.ramp-share { fill: var(--ramp-share); }
+.ramp-fill.ramp-obligations { fill: var(--ramp-obligations); }
+.ramp-fill.ramp-award-value { fill: var(--ramp-award-value); }
+.ramp-fill.ramp-share { fill: var(--ramp-share); }
+.curve.ramp-stroke-obligations { stroke: var(--ramp-obligations); }
+.curve.ramp-stroke-award-value { stroke: var(--ramp-award-value); }
+.curve.ramp-stroke-share { stroke: var(--ramp-share); }
+.curve { stroke-width: 2.5; }
+.hatch-line { stroke: var(--surface-base); stroke-width: 3.5; }
+.dot-mark { fill: var(--surface-base); }
+.axis, .reference { stroke: var(--text-ink-soft); stroke-width: 1; }
+.reference { stroke-dasharray: 3 4; }
+.axis-label, .axis-title, .row-label, .row-value, .series-end, .split-label, .split-value, .tick {
+  fill: var(--text-ink);
+  font-size: 12px;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.row-value, .split-value, .tick {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.split-label, .split-value { font-size: 13px; }
+.axis-title { fill: var(--text-ink-soft); font-size: 11px; letter-spacing: 0.06em; }
+.series-end { fill: var(--text-ink-soft); font-size: 11px; }
+/* The focus indicator is drawn OUTSIDE the mark it names, so the surface behind it is always the
+   plot ground rather than a chart fill. That is what lets one ring colour clear three to one in
+   both themes by arithmetic instead of by luck. */
+.chart-focus { stroke: var(--line-focus-ring); stroke-width: 2; }
+.soft-mark { fill: var(--text-ink-soft); font-size: 11px; }
+.unit-key {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  gap: 0.5rem;
+  align-items: start;
+  font-size: 0.8rem;
+  color: var(--text-ink-soft);
+  max-width: 72ch;
+  margin-top: 0.7rem;
+}
+.unit-swatch { margin-top: 0.2rem; }
+
+/* ---- waiting, failing, tables ---- */
+.skeleton {
+  border: 1px dashed var(--line-rule);
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+  color: var(--text-ink-soft);
+  font-size: 0.88rem;
+}
+.skeleton p { margin: 0 0 0.4rem; }
+.skeleton p:last-child { margin-bottom: 0; }
+.tablewrap { overflow-x: auto; margin: 0.7rem 0; }
+/* A table whose row count is a fact about the data rather than a design decision gets a pane
+   with a height. Nothing is removed and nothing is collapsed: the rows are all in the document
+   and the pane scrolls. The container carries tabindex so a keyboard can reach the scroll. */
+.tablewrap-tall { max-height: 26rem; overflow-y: auto; border: 1px solid var(--line-rule); border-radius: 8px; padding: 0 0.5rem; }
+.tablewrap-tall caption { position: sticky; top: 0; background: var(--surface-raised); padding-top: 0.5rem; }
+.tablewrap-tall thead th { position: sticky; top: 0; background: var(--surface-raised); }
+.tablewrap-tall:focus-visible { outline: 2px solid var(--line-focus-ring); outline-offset: 2px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+caption { text-align: left; color: var(--text-ink-soft); padding-bottom: 0.4rem; max-width: 72ch; font-size: 0.82rem; }
+th, td { border-bottom: 1px solid var(--line-rule); padding: 0.35rem 0.55rem; text-align: left; vertical-align: top; }
+th { color: var(--text-ink-soft); font-weight: 650; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+
+/* ---- THE RESULT STATE. Two columns once there is room, so the answer and its supporting
+   panels are read side by side rather than as a column two storeys high. The hero spans the
+   full width, because it is the answer and the rest is corroboration. ---- */
+main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 clamp(1.5rem, 3vw, 2.75rem); align-items: start; }
+main > section { padding: 1.6rem 0 0; min-width: 0; }
+section.frame, section.wide { grid-column: 1 / -1; }
+section.reference-region { grid-column: 1 / -1; padding-top: 2.4rem; }
+
+footer { grid-column: 1 / -1; border-top: 1px solid var(--line-rule); margin-top: 2.5rem; padding-top: 1rem; color: var(--text-ink-soft); font-size: 0.82rem; }
+footer p { margin: 0; }
+
+.reference-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem 2.5rem; }
+.reference-grid section { padding: 0; min-width: 0; }
+.reference-grid p { font-size: 0.85rem; }
+
+@media (min-width: 62rem) {
+  main { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  ul.boundary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reference-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 62rem) {
+  section.frame { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+}
+
+@media (max-width: 45rem) {
+  .wrap { padding: 0 1rem 3rem; }
+  .search input[type="search"] { flex-basis: 100%; }
+  .controls { flex-direction: column; }
+  .legend li { grid-template-columns: 1fr; }
+  button.cand-pick { grid-template-columns: 1fr; }
+  .frame-method .kv { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+  .frame-method dt { padding-top: 0.5rem; }
+  table { font-size: 0.8rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .panel, .skeleton, .chart-plot, .hook { border-color: CanvasText; }
+  button { border: 1px solid ButtonText; }
+  .mark.ramp-obligations, .ramp-fill.ramp-obligations { fill: Highlight; }
+  .mark.ramp-award-value, .ramp-fill.ramp-award-value { fill: CanvasText; }
+  .mark.ramp-share, .ramp-fill.ramp-share { fill: LinkText; }
+  .curve.ramp-stroke-obligations { stroke: Highlight; }
+  .curve.ramp-stroke-award-value { stroke: CanvasText; }
+  .curve.ramp-stroke-share { stroke: LinkText; }
+  .hatch-line, .dot-mark { stroke: Canvas; fill: Canvas; }
+  .chart-focus { stroke: Highlight; }
+  .axis, .reference { stroke: CanvasText; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#q">Skip to the search</a>
+<div class="wrap">
+
+<header class="masthead">
+  <h1 class="wordmark">solebidder</h1>
+  <div id="panel-source-as-of" class="masthead-meta" data-region></div>
+</header>
+
+<main>
+
+  <!-- ============================================================================
+       THE OPENING FRAME. DESIGN 5, second zero.
+
+       Three things and nothing else: one true sourced figure the visitor did not
+       ask for, the search field, and the method beside it. Every other region on
+       this page is hidden until it holds something, because a heading over an
+       empty region is a promise the page has not kept yet.
+       ============================================================================ -->
+  <section class="frame" aria-labelledby="find">
+    <div class="frame-main">
+      <p class="lede">Federal contracting sounds like competitive bidding across a wide field of
+      buyers. The government publishes the fields that say otherwise.</p>
+
+      <div id="panel-hook" class="hook" data-region></div>
+
+      <h2 id="find" class="eyebrow visually-hidden">Find a contractor</h2>
+      <form id="search-form" class="search" role="search">
+        <label class="visually-hidden" for="q">Company name</label>
+        <input id="q" type="search" name="q" placeholder="Start typing a contractor name"
+               autocomplete="off" spellcheck="false" aria-describedby="q-help">
+        <button type="submit">Search</button>
+      </form>
+      <p id="q-help" class="fine soft">Names resolve to a parent entity. Where more than one
+      unlinked parent record matches a name, this tool shows you the split records and declines
+      to add them together.</p>
+      <div id="panel-suggestions" data-region></div>
+      <div id="panel-chips" data-region></div>
+      <div id="panel-controls" data-region></div>
+      <noscript>
+        <p class="warn">This page computes every figure in your own browser from the government
+        API, so the figures need scripting enabled. What this tool does and does not measure is
+        below and needs nothing.</p>
+      </noscript>
+    </div>
+
+    <aside class="frame-method" aria-labelledby="method">
+      <h2 id="method" class="eyebrow">Method</h2>
+      <dl class="kv">
+        <dt>Source</dt>
+        <dd>USAspending.gov, fetched live by your own browser. Nothing on this page is
+        precomputed and nothing is cached to disk.</dd>
+        <dt>Scope</dt>
+        <dd>Federal prime award obligations recorded against one parent unique entity identifier
+        and its registered child identifiers, for one named fiscal year.</dd>
+        <dt>Badging</dt>
+        <dd>Every figure carries the endpoint, the filter method and the date the source
+        publishes about itself.</dd>
+        <dt>Refusal</dt>
+        <dd>Where a name resolves to more than one unlinked parent record, this tool shows the
+        split records rather than summing them into one answer.</dd>
+      </dl>
+      <div id="panel-hook-detail" class="hook-detail" data-region></div>
+    </aside>
+  </section>
+
+  <!-- ============================================================================
+       THE ANSWER. Everything below arrives with its data and is hidden until then.
+       mount() in src/ui/panels.js toggles the nearest data-disclose ancestor.
+       ============================================================================ -->
+
+  <section class="wide" data-disclose hidden aria-labelledby="entity">
+    <h2 id="entity" class="eyebrow">Which entity</h2>
+    <div id="panel-chooser" data-region></div>
+    <div id="panel-subject" data-region></div>
+  </section>
+
+  <section class="wide" data-disclose hidden aria-labelledby="hero">
+    <h2 id="hero" class="eyebrow">How much of it had exactly one bidder</h2>
+    <div id="panel-hero" data-region></div>
+  </section>
+
+  <section data-disclose hidden aria-labelledby="mix">
+    <h2 id="mix" class="eyebrow">Who buys from it</h2>
+    <div id="panel-mix" data-region></div>
+    <div id="panel-mix-subagency" data-region></div>
+  </section>
+
+  <section data-disclose hidden aria-labelledby="whatfor">
+    <h2 id="whatfor" class="eyebrow">What it is bought for</h2>
+    <div id="panel-mix-psc" data-region></div>
+    <div id="panel-mix-naics" data-region></div>
+  </section>
+
+  <section data-disclose hidden aria-labelledby="spine">
+    <h2 id="spine" class="eyebrow">Obligations by fiscal year</h2>
+    <div id="panel-spine" data-region></div>
+  </section>
+
+  <section data-disclose hidden aria-labelledby="concentration">
+    <h2 id="concentration" class="eyebrow">How concentrated the contract book is</h2>
+    <div id="panel-concentration" data-region></div>
+  </section>
+
+  <section data-disclose hidden aria-labelledby="rollup">
+    <h2 id="rollup" class="eyebrow">What was summed</h2>
+    <div id="panel-rollup" data-region></div>
+  </section>
+
+  <section data-disclose hidden aria-labelledby="definition">
+    <h2 id="definition" class="eyebrow">The other definition of the same company</h2>
+    <div id="panel-definition" data-region></div>
+  </section>
+
+  <!-- ============================================================================
+       THE CLAIM BOUNDARY. Always present, never hidden, never behind a disclosure.
+       DESIGN 2.4: a reader who misses one of these will misread every figure above.
+       ============================================================================ -->
+  <section class="reference-region" aria-labelledby="boundary">
+    <h2 id="boundary" class="eyebrow">What this does not measure</h2>
+    <ul class="boundary">
+      <!-- BUILD:NEVER-CLAIMED -->
+        <li class="nc" id="nc-obligations-are-not-revenue" data-claim-badge="NEVER_CLAIMED">
+          <span class="nc-badge" aria-hidden="true">X</span>
+          <strong class="nc-head">These are obligations, not revenue.</strong>
+          <span class="nc-body">These are obligations, not revenue. The government committing money is not the company recognising revenue under ASC 606, and it is not cash paid. A large obligation in one year is not a revenue year of the same size, because the work is performed and booked over many years.</span>
+        </li>
+        <li class="nc" id="nc-not-outlays" data-claim-badge="NEVER_CLAIMED">
+          <span class="nc-badge" aria-hidden="true">X</span>
+          <strong class="nc-head">These are not outlays.</strong>
+          <span class="nc-body">These are not outlays. The total outlays field came back null on every aggregate endpoint tested, on spending over time and on every category response. Outlays are not trended anywhere in this tool, because they are not available, and a null is never displayed as a zero.</span>
+        </li>
+        <li class="nc" id="nc-award-value-is-lifetime" data-claim-badge="NEVER_CLAIMED">
+          <span class="nc-badge" aria-hidden="true">X</span>
+          <strong class="nc-head">Award Amount is lifetime award value.</strong>
+          <span class="nc-body">Award Amount is the lifetime value of an award, exercised options included, not money obligated in the fiscal year you selected. It never shares a chart, a column or a colour ramp with the fiscal year figure.</span>
+        </li>
+        <li class="nc" id="nc-not-everything-a-company-gets" data-claim-badge="NEVER_CLAIMED">
+          <span class="nc-badge" aria-hidden="true">X</span>
+          <strong class="nc-head">This is not everything a company gets.</strong>
+          <span class="nc-body">This is money recorded under one parent UEI and its registered child UEIs. Entities that are not registered under that parent are invisible to it, and the figure is not a measure of everything the company receives from the federal government.</span>
+        </li>
+        <li class="nc" id="nc-parent-tree-self-reported" data-claim-badge="NEVER_CLAIMED">
+          <span class="nc-badge" aria-hidden="true">X</span>
+          <strong class="nc-head">The parent and child tree is self reported, not audited.</strong>
+          <span class="nc-body">The parent and child tree is what the registrant declared about itself in SAM.gov registration. It is not SEC consolidation, nobody audited it, and it goes stale. One large laboratory entity still sits in a defence prime children list years after its management contract moved to a different company, and that example is shown on this page rather than hidden.</span>
+        </li>
+        <li class="nc" id="nc-subawards-excluded" data-claim-badge="NEVER_CLAIMED">
+          <span class="nc-badge" aria-hidden="true">X</span>
+          <strong class="nc-head">Subawards are excluded.</strong>
+          <span class="nc-body">Every query here sets subawards to false. Subaward reporting is self reported by prime recipients and is materially incomplete, so including it would produce a floor that reads like a total.</span>
+        </li>
+        <li class="nc" id="nc-no-losing-bidders" data-claim-badge="NEVER_CLAIMED">
+          <span class="nc-badge" aria-hidden="true">X</span>
+          <strong class="nc-head">Who lost a bid does not exist in this data.</strong>
+          <span class="nc-body">The federal procurement record publishes the number of offers received and never the identity of the parties who did not win. Any tool implying otherwise is fabricating it, and this one says so in the competition panel rather than in a footnote.</span>
+        </li>
+        <li class="nc" id="nc-classified-gap-unmeasurable" data-claim-badge="NEVER_CLAIMED">
+          <span class="nc-badge" aria-hidden="true">X</span>
+          <strong class="nc-head">Classified and withheld actions are missing.</strong>
+          <span class="nc-body">Classified and withheld actions are absent from this data and the size of that gap cannot be measured from inside it. Defence primes are exactly where the gap is largest and exactly the names searched first, so no figure here is a complete picture of what a defence prime does for the government.</span>
+        </li>
+        <li class="nc" id="nc-floor-2008" data-claim-badge="NEVER_CLAIMED">
+          <span class="nc-badge" aria-hidden="true">X</span>
+          <strong class="nc-head">Nothing before fiscal year 2008.</strong>
+          <span class="nc-body">The search API holds nothing awarded before 1 October 2007, so the earliest fiscal year offered here is 2008 and no figure on this page is framed as covering the whole history of a company.</span>
+        </li>
+        <li class="nc" id="nc-no-financial-denominators" data-claim-badge="NEVER_CLAIMED">
+          <span class="nc-badge" aria-hidden="true">X</span>
+          <strong class="nc-head">There is no revenue denominator here.</strong>
+          <span class="nc-body">There is no revenue denominator, no backlog, no cost overrun figure and no split of foreign military sales anywhere in this tool. Those live in a company annual report and this page does not read one.</span>
+        </li>
+      <!-- /BUILD:NEVER-CLAIMED -->
+    </ul>
+  </section>
+
+  <section class="reference-region" aria-labelledby="reference">
+    <h2 id="reference" class="eyebrow">How to read this page</h2>
+    <div class="reference-grid">
+
+      <section aria-labelledby="badges">
+        <h3 id="badges">How every figure is badged</h3>
+        <ul class="legend">
+          <li><span class="k k-reported">REPORTED</span>
+            <span>USAspending returned this figure from the endpoint and field named beside it.
+            We did no arithmetic to it.</span></li>
+          <li><span class="k k-computed">COMPUTED</span>
+            <span>Our arithmetic over reported figures only. The formula is printed, and the
+            shipped test suite recomputes it from a committed fixture, so anybody who clones this
+            repository can check it.</span></li>
+          <li><span class="k k-estimated">ESTIMATED</span>
+            <span>Nothing on this page is estimated. This kind exists so that the build gate can
+            detect an attempt to publish one, and the budget for it is zero.</span></li>
+          <li><span class="k k-never">NEVER CLAIMED</span>
+            <span>A statement about what this tool does not measure. Those are above, on the
+            page, because a reader who misses one will misread every figure beside it.</span></li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="source">
+        <h3 id="source">Data source</h3>
+        <p>Source: USAspending.gov, United States Department of the Treasury. United States law
+        places works of the federal government outside domestic copyright, and the source
+        repository for that API is published under a public domain dedication. This page
+        redistributes nothing: every figure is fetched live by your own browser from the
+        government's own host.</p>
+        <p class="soft">Entities are keyed on the unique entity identifier only. The date shown
+        beside a figure is the date the source publishes about itself, fetched on every page
+        load. If that call fails, the date area says the source as of date is unavailable and no
+        date is asserted.</p>
+      </section>
+
+      <section aria-labelledby="privacy">
+        <h3 id="privacy">Privacy</h3>
+        <p>No account, no signup, no key, no analytics, no cookies, and nothing you type is
+        stored. Your browser talks to the government API directly. We never see a query.</p>
+      </section>
+
+      <section aria-labelledby="independence">
+        <h3 id="independence">Statement of independence</h3>
+        <p>Not affiliated with, endorsed by, or sponsored by the United States government, the
+        Department of the Treasury, the Department of Defense, USAspending.gov, or any company
+        named on this page. All data comes from public government APIs. All company names are
+        used descriptively.</p>
+      </section>
+
+    </div>
+  </section>
+
+</main>
+
+  <footer>
+    <p>Source code under the MIT licence.
+    <a href="https://github.com/0xelitesystem/solebidder">Repository</a>.
+    <a href="https://elitesystem.ai">elitesystem.ai</a></p>
+  </footer>
+
+</div>
+
+<script type="module" src="src/ui/main.js"></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "solebidder",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any modern browser",
+  "url": "https://0xelitesystem.github.io/solebidder/",
+  "description": "Type a federal contractor and see who actually buys from it, how concentrated that book is, and how much of it was awarded with exactly one bidder.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "0xelitesystem", "url": "https://elitesystem.ai" },
+  "license": "https://opensource.org/licenses/MIT",
+  "isBasedOn": "https://api.usaspending.gov"
+}
+</script>
+
+</body>
+</html>

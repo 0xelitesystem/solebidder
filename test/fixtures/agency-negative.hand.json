@@ -1,0 +1,14 @@
+{
+  "what": "A deobligation. Money committed in an earlier action and released back in this one, which is ordinary in this data and is recorded as a negative amount.",
+  "notRecorded": "Hand built. Not a recorded API response.",
+  "rows": [
+    { "name": "BUYER ONE", "code": "001", "id": "1", "amount": 100 },
+    { "name": "BUYER TWO", "code": "002", "id": "2", "amount": -50 }
+  ],
+  "arithmetic": {
+    "total": 50,
+    "naiveTopShare": 2,
+    "expected": "The parts do not sum to the whole in the way a percentage assumes. The quotient is 2, which is two hundred percent, and it is refused rather than printed. The count of negative rows is published beside the panel and the underlying amounts are still shown.",
+    "herfindahlWorking": "Shares of 2 and -1 square to 4 and 1 and sum to 5, which is not an index at all. The index is refused for the same reason."
+  }
+}

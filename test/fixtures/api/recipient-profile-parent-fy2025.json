@@ -1,0 +1,72 @@
+{
+ "name": "LOCKHEED MARTIN CORP",
+ "alternate_names": [
+  "ASTROTECH SPACE OPERATIONS  LLC",
+  "COMPOSITE TECHNOLOGY  INC.",
+  "DERCO AEROSPACE  INC.",
+  "LIFEPORT   LLC",
+  "LIFEPORT , LLC",
+  "LIFEPORT LLC",
+  "LOCKHEED MARTIN AEROPARTS  INC.",
+  "LOCKHEED MARTIN AUSTRALIA PTY LIMITED",
+  "LOCKHEED MARTIN CANADA INC",
+  "LOCKHEED MARTIN COHERENT TECHNOLOGIES  INC.",
+  "LOCKHEED MARTIN CORPORAT",
+  "LOCKHEED MARTIN CORPORATION",
+  "LOCKHEED MARTIN CORPORATION (3632)",
+  "LOCKHEED MARTIN GLOBAL  INC",
+  "LOCKHEED MARTIN GLOBAL  INC.",
+  "LOCKHEED MARTIN INTEGRATED SYSTEMS  LLC",
+  "LOCKHEED MARTIN OVERSEAS  LLC",
+  "LOCKHEED MARTIN PROCERUS TECHNOLOGIES  L.C.",
+  "LOCKHEED MARTIN SERVICES  INC.",
+  "LOCKHEED MARTIN SERVICES  LLC",
+  "LOCKHEED MARTIN SIPPICAN  INC.",
+  "POLSKIE ZAKLADY LOTNICZE SP Z O O",
+  "PREDASAR CORP",
+  "SIKORSKY AIRCRAFT CORPORATION",
+  "SIKORSKY SUPPORT SERVICES  INC.",
+  "SIKORSKY SUPPORT SERVICES INC",
+  "ZETA ASSOCIATES INC"
+ ],
+ "uei": "ZFN2JJXBLZT3",
+ "recipient_id": "b97d19b0-833c-8d8f-3a2c-157d04ea55ef-P",
+ "recipient_level": "P",
+ "parent_id": "b97d19b0-833c-8d8f-3a2c-157d04ea55ef-P",
+ "parent_name": "LOCKHEED MARTIN CORP",
+ "parent_uei": "ZFN2JJXBLZT3",
+ "parents": [
+  {
+   "parent_id": "b97d19b0-833c-8d8f-3a2c-157d04ea55ef-P",
+   "parent_uei": "ZFN2JJXBLZT3",
+   "parent_name": "LOCKHEED MARTIN CORP"
+  }
+ ],
+ "business_types": [
+  "category_business",
+  "corporate_entity_not_tax_exempt",
+  "manufacturer_of_goods",
+  "other_than_small_business",
+  "special_designations",
+  "us_owned_business"
+ ],
+ "location": {
+  "address_line1": "6801 ROCKLEDGE DR",
+  "address_line2": null,
+  "address_line3": null,
+  "foreign_province": null,
+  "city_name": "BETHESDA",
+  "county_name": null,
+  "state_code": "MD",
+  "zip": "20817",
+  "zip4": "1803",
+  "foreign_postal_code": null,
+  "country_name": "UNITED STATES",
+  "country_code": "USA",
+  "congressional_code": "08"
+ },
+ "total_transaction_amount": 65405410468.25,
+ "total_transactions": 32424,
+ "total_face_value_loan_amount": 0,
+ "total_face_value_loan_transactions": 0
+}

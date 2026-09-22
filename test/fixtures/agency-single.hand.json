@@ -1,0 +1,14 @@
+{
+  "what": "One customer at one hundred percent. The awkward case where a share is exactly one.",
+  "notRecorded": "Hand built. Not a recorded API response.",
+  "rows": [
+    { "name": "ONLY BUYER", "code": "001", "id": "1", "amount": 42000 }
+  ],
+  "arithmetic": {
+    "total": 42000,
+    "topShare": 1,
+    "topSharePercentText": "100.0 percent",
+    "herfindahl": 1,
+    "why": "A single row is its own total, so the share is exactly one and the index is exactly one. Both sit at the top of the range the renderer accepts, which is the boundary most likely to be broken by an off by one comparison."
+  }
+}

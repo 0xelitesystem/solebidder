@@ -1,0 +1,25 @@
+{
+  "what": "Two year over year pairs that have no printable percentage, for different reasons.",
+  "notRecorded": "Hand built. Not a recorded API response.",
+  "growthBeyondRange": {
+    "points": [
+      { "fiscalYear": 2024, "obligations": 100 },
+      { "fiscalYear": 2025, "obligations": 300 }
+    ],
+    "delta": 200,
+    "naiveRatio": 2,
+    "expected": "A rise of two hundred percent. The share unit kind on this page is a proportion between nought and one hundred percent, so no percentage is printed. Both years and the signed difference in dollars are. This is not a contrived case: the recorded fiscal year series for the most searched company in the dataset rises 104.4 percent into FY2025."
+  },
+  "negativePriorYear": {
+    "points": [
+      { "fiscalYear": 2024, "obligations": -100 },
+      { "fiscalYear": 2025, "obligations": 50 }
+    ],
+    "delta": 150,
+    "expected": "The year before is negative, because more money was released back than was committed. A percentage measured against a negative base has no useful meaning, so none is printed."
+  },
+  "emptySet": {
+    "points": [],
+    "expected": "No fiscal years came back at all. The spine reports available false with its own sentence and plots nothing. It does not plot a flat line at zero."
+  }
+}

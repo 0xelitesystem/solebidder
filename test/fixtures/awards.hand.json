@@ -1,0 +1,31 @@
+{
+  "what": "Hand built award rows and their competition records, for the sole bidder share, the one offer count share, the top award share and the cumulative curve.",
+  "notRecorded": "Hand built. No real award identifier, company or amount appears here.",
+  "awardRows": [
+    { "awardId": "HAND-0001", "recipientName": "SUBJECT ENTITY", "awardValue": 500, "generatedInternalId": "hand_0001" },
+    { "awardId": "HAND-0002", "recipientName": "SUBJECT ENTITY", "awardValue": 300, "generatedInternalId": "hand_0002" },
+    { "awardId": "HAND-0003", "recipientName": "SUBJECT ENTITY", "awardValue": 150, "generatedInternalId": "hand_0003" },
+    { "awardId": "HAND-0004", "recipientName": "SUBJECT ENTITY", "awardValue": 50, "generatedInternalId": "hand_0004" }
+  ],
+  "awardDetails": [
+    { "generatedInternalId": "hand_0001", "awardId": "HAND-0001", "extentCompeted": "NOT COMPETED", "offersReceived": 1, "offersReceivedRaw": "1", "solicitationProcedures": "ONLY ONE SOURCE", "setAside": null, "solicitationIdentifier": null, "inconsistent": false },
+    { "generatedInternalId": "hand_0002", "awardId": "HAND-0002", "extentCompeted": "FULL AND OPEN COMPETITION", "offersReceived": 4, "offersReceivedRaw": "4", "solicitationProcedures": "NEGOTIATED PROPOSAL", "setAside": null, "solicitationIdentifier": null, "inconsistent": false },
+    { "generatedInternalId": "hand_0003", "awardId": "HAND-0003", "extentCompeted": "NOT COMPETED UNDER SAP", "offersReceived": 1, "offersReceivedRaw": "1", "solicitationProcedures": "SIMPLIFIED ACQUISITION", "setAside": null, "solicitationIdentifier": null, "inconsistent": false },
+    { "generatedInternalId": "hand_0004", "awardId": "HAND-0004", "extentCompeted": "FULL AND OPEN COMPETITION", "offersReceived": 0, "offersReceivedRaw": "0", "solicitationProcedures": "NEGOTIATED PROPOSAL", "setAside": null, "solicitationIdentifier": null, "inconsistent": true }
+  ],
+  "arithmetic": {
+    "total": 1000,
+    "notCompetedValue": 500,
+    "soleBidderShare": 0.5,
+    "soleBidderSharePercentText": "50.0 percent",
+    "theWideningTrap": "HAND-0003 carries NOT COMPETED UNDER SAP. That is a different value of the same field and it does not count. A substring test would count it, the numerator would be 650 and the share would read 65.0 percent, which is the direction that makes a headline louder. The test asserts 0.5 and asserts that 0.65 is not the answer.",
+    "oneOfferNumerator": 2,
+    "oneOfferDenominator": 3,
+    "oneOfferShare": 0.6666666666666666,
+    "oneOfferWorking": "HAND-0001 and HAND-0003 each report exactly one offer received. HAND-0004 reports full and open competition alongside zero offers, so the record contradicts itself, and it is shown as reported and excluded from the count. Two over three.",
+    "inconsistentCount": 1,
+    "fieldAbsentCount": 0,
+    "topAwardShare": 0.5,
+    "cumulativeShares": [0.5, 0.8, 0.95, 1]
+  }
+}

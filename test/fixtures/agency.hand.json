@@ -1,0 +1,33 @@
+{
+  "what": "Hand built category rows for the one customer share and the Herfindahl index.",
+  "notRecorded": "These are not a recorded API response. No real agency, company or amount appears here.",
+  "rows": [
+    {
+      "name": "BUYER ONE",
+      "code": "001",
+      "id": "1",
+      "amount": 750
+    },
+    {
+      "name": "BUYER TWO",
+      "code": "002",
+      "id": "2",
+      "amount": 200
+    },
+    {
+      "name": "BUYER THREE",
+      "code": "003",
+      "id": "3",
+      "amount": 50
+    }
+  ],
+  "arithmetic": {
+    "total": 1000,
+    "topName": "BUYER ONE",
+    "topShare": 0.75,
+    "topSharePercentText": "75.0 percent",
+    "herfindahl": 0.605,
+    "herfindahlWorking": "0.75 squared is 0.5625, 0.20 squared is 0.04, 0.05 squared is 0.0025, and those sum to 0.605.",
+    "floatNote": "0.2 and 0.05 have no exact binary representation, yet this particular set of three squares happens to sum back to exactly 0.605 in double precision. The test asserts closeness rather than equality, because that coincidence is a property of these three numbers and not of the formula."
+  }
+}

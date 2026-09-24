@@ -18,7 +18,8 @@
 // There is no per line opt out marker and there will not be one: an opt out a copywriter can
 // reach is an opt out that ends up in the copy.
 
-import { readdir, stat, readFile } from 'node:fs/promises';
+import { readdir, stat, readFile, mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -117,6 +118,77 @@ export async function sourceFiles(root = REPO) {
     out.push({ rel, abs, text: await readFile(abs, 'utf8') });
   }
   return out;
+}
+
+/**
+ * A throwaway repository tree, for the COVERAGE controls.
+ *
+ * A gate's positive controls prove its patterns catch a violation handed to them as a string.
+ * They cannot prove the gate ever READS the file the violation would ship in: a scan set that
+ * stopped reaching a directory passes forever, because it finds nothing to fail on. So each gate
+ * also plants a violation in a throwaway tree, in exactly the places new shipped code and copy
+ * will live (src/cli/ for the command line, USAGE.md for its long form documentation), runs its
+ * own real scan over that tree, and fails unless the scan catches it. The tree is written under
+ * the operating system's temporary directory, never inside this repository, and removed after.
+ *
+ * @param {Record<string, string>} files Relative path, forward slashes, to file text.
+ * @returns {Promise<{root:string, cleanup:() => Promise<void>}>}
+ */
+export async function plantTree(files) {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'solebidder-gate-'));
+  for (const [rel, text] of Object.entries(files)) {
+    const abs = path.join(root, ...rel.split('/'));
+    await mkdir(path.dirname(abs), { recursive: true });
+    await writeFile(abs, text, 'utf8');
+  }
+  return { root, cleanup: () => rm(root, { recursive: true, force: true }) };
+}
+
+/**
+ * Run a scan over a planted tree and report whether it failed, with its own output silenced, so
+ * a control's deliberate failures never read as real ones in the log.
+ * @param {(root:string) => Promise<number>} scan A gate scan that returns its failure count.
+ * @param {Record<string, string>} files
+ * @returns {Promise<number>} The failure count the scan returned over the planted tree.
+ */
+export async function scanPlanted(scan, files) {
+  const { root, cleanup } = await plantTree(files);
+  const log = console.log;
+  console.log = () => {};
+  try {
+    return await scan(root);
+  } finally {
+    console.log = log;
+    await cleanup();
+  }
+}
+
+/**
+ * Run a gate's coverage cases: every MUST_FAIL tree must make the scan fail and every MUST_PASS
+ * tree must leave it clean. Returns the number of cases that did the wrong thing.
+ * @param {string} gate
+ * @param {(root:string) => Promise<number>} scan
+ * @param {{name:string, files:Record<string,string>}[]} mustFail
+ * @param {{name:string, files:Record<string,string>}[]} mustPass
+ * @returns {Promise<number>}
+ */
+export async function coverageCases(gate, scan, mustFail, mustPass) {
+  say.head(gate + ' coverage controls');
+  let bad = 0;
+  for (const c of mustFail) {
+    if (await scanPlanted(scan, c.files) > 0) say.pass('covered: ' + c.name);
+    else {
+      say.fail('NOT covered: ' + c.name + '. The scan never reached the file, so a violation '
+        + 'there would ship.');
+      bad += 1;
+    }
+  }
+  for (const c of mustPass) {
+    const n = await scanPlanted(scan, c.files);
+    if (n === 0) say.pass('correctly clean: ' + c.name);
+    else { say.fail('FALSE POSITIVE on a clean tree: ' + c.name); bad += 1; }
+  }
+  return bad;
 }
 
 /** Console helpers, so every gate reports in the same shape. */

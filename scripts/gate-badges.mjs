@@ -31,7 +31,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { BADGE_KINDS, ESTIMATED } from '../src/core/claim.js';
-import { REPO, shippedCopy, sourceFiles, say, isMain } from './_shipped.mjs';
+import { REPO, shippedCopy, sourceFiles, say, isMain, coverageCases } from './_shipped.mjs';
 
 const BUDGET_FILE = path.join(REPO, 'scripts', 'badge-exception-budget.json');
 
@@ -332,12 +332,16 @@ async function readBudget() {
   };
 }
 
-async function scan() {
+/**
+ * @param {string} [root] The tree to scan. The repository, except in the coverage controls.
+ * @returns {Promise<number>}
+ */
+export async function scan(root = REPO) {
   say.head('gate-badges');
   const budget = await readBudget();
-  const files = await shippedCopy();
+  const files = await shippedCopy(root);
   const html = files.filter((f) => f.rel.endsWith('.html'));
-  const js = await sourceFiles();
+  const js = await sourceFiles(root);
 
   let bad = 0;
   let chromeTotal = 0;
@@ -401,9 +405,28 @@ async function scan() {
   return bad;
 }
 
+/**
+ * COVERAGE. The command line will live under src/cli/. An estimate planted there, in a .js or
+ * a .mjs module, must fail this gate's real scan, and the same module without it must not.
+ * @returns {Promise<number>}
+ */
+export async function coverageControl() {
+  const planted = 'export const KINDS = [' + ESTIMATED + ', 1];\n';
+  return coverageCases('gate-badges', scan, [
+    { name: 'an estimate token in a module under src/cli/', files: { 'src/cli/legend.js': planted } },
+    { name: 'an estimate token in a .mjs module under src/cli/', files: { 'src/cli/legend.mjs': planted } },
+  ], [
+    {
+      name: 'a legend built from the badge registry at runtime',
+      files: { 'src/cli/legend.js': 'export const legend = (spec) => Object.values(spec).map((s) => s.label);\n' },
+    },
+  ]);
+}
+
 if (isMain(import.meta.url)) {
   const selftestOnly = process.argv.includes('--selftest');
   let failures = selftest();
+  failures += await coverageControl();
   if (!selftestOnly) failures += await scan();
   console.log(failures === 0 ? '\ngate-badges: PASS' : '\ngate-badges: FAIL (' + failures + ')');
   process.exit(failures === 0 ? 0 : 1);

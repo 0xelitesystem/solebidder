@@ -7,10 +7,16 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { selftest as badgeSelftest, scanHtmlForBadges, scanJsForBadges, scanJsForEstimates } from '../scripts/gate-badges.mjs';
-import { selftest as unitSelftest } from '../scripts/gate-units.mjs';
-import { selftest as vocabSelftest } from '../scripts/gate-vocabulary.mjs';
-import { selftest as contrastSelftest, checkPairs, checkRamps } from '../scripts/gate-contrast.mjs';
+import {
+  selftest as badgeSelftest, coverageControl as badgeCoverage, scanHtmlForBadges, scanJsForBadges,
+  scanJsForEstimates,
+} from '../scripts/gate-badges.mjs';
+import { selftest as unitSelftest, coverageControl as unitCoverage } from '../scripts/gate-units.mjs';
+import { selftest as vocabSelftest, coverageControl as vocabCoverage } from '../scripts/gate-vocabulary.mjs';
+import {
+  selftest as contrastSelftest, coverageControl as contrastCoverage, checkPairs, checkRamps,
+} from '../scripts/gate-contrast.mjs';
+import { shippedCopy, sourceFiles, plantTree } from '../scripts/_shipped.mjs';
 import { scanText } from '../scripts/banned-vocabulary.mjs';
 import { contrastRatio, THEMES, PAIRS, UNIT_RAMPS, MONEY_RAMP_PAIR, AA_NORMAL, AA_NON_TEXT, MIN_RAMP_SEPARATION } from '../src/core/tokens.js';
 
@@ -30,6 +36,30 @@ test('gate-vocabulary positive controls all pass', () => {
 
 test('gate-contrast positive controls all pass', () => {
   assert.equal(contrastSelftest(), 0);
+});
+
+test('EVERY GATE READS src/cli/ AND USAGE.md: a violation planted there fails the real scan of each gate',
+  async () => {
+    assert.equal(await badgeCoverage(), 0, 'gate-badges does not reach the command line modules');
+    assert.equal(await unitCoverage(), 0, 'gate-units does not reach the command line modules');
+    assert.equal(await vocabCoverage(), 0, 'gate-vocabulary does not reach src/cli/ or USAGE.md');
+    assert.equal(await contrastCoverage(), 0, 'gate-contrast does not reach src/cli/ or USAGE.md');
+  });
+
+test('the shipped copy set holds USAGE.md and src/cli/, and the source set holds src/cli/ modules of '
+  + 'both extensions, while scripts/ and test/ stay out of both', async () => {
+  const { root, cleanup } = await plantTree({
+    'USAGE.md': 'x', 'README.md': 'x', 'index.html': 'x', 'docs/a.md': 'x',
+    'src/cli/main.js': 'x', 'src/cli/out.mjs': 'x', 'scripts/gate.mjs': 'x', 'test/a.test.js': 'x',
+  });
+  try {
+    const copy = (await shippedCopy(root)).map((f) => f.rel).sort();
+    const source = (await sourceFiles(root)).map((f) => f.rel).sort();
+    assert.deepEqual(copy, ['README.md', 'USAGE.md', 'docs/a.md', 'index.html', 'src/cli/main.js', 'src/cli/out.mjs']);
+    assert.deepEqual(source, ['src/cli/main.js', 'src/cli/out.mjs']);
+  } finally {
+    await cleanup();
+  }
 });
 
 test('every declared text pair clears AA in both themes', () => {

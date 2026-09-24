@@ -35,7 +35,7 @@ import { UNIT_KINDS, TALLY } from '../src/core/units.js';
 import { makeChartInput } from '../src/contracts/chart.js';
 import { computed, reported, METHODS } from '../src/core/claim.js';
 import { OBLIGATIONS, AWARD_VALUE } from '../src/core/units.js';
-import { shippedCopy, sourceFiles, say, isMain } from './_shipped.mjs';
+import { REPO, shippedCopy, sourceFiles, say, isMain, coverageCases } from './_shipped.mjs';
 
 /** The one file allowed to build a currency string. */
 const CURRENCY_OWNER = 'src/core/units.js';
@@ -328,11 +328,15 @@ export function selftest() {
   return bad;
 }
 
-async function scan() {
+/**
+ * @param {string} [root] The tree to scan. The repository, except in the coverage controls.
+ * @returns {Promise<number>}
+ */
+export async function scan(root = REPO) {
   say.head('gate-units');
   let bad = 0;
-  const src = await sourceFiles();
-  const html = (await shippedCopy()).filter((f) => f.rel.endsWith('.html'));
+  const src = await sourceFiles(root);
+  const html = (await shippedCopy(root)).filter((f) => f.rel.endsWith('.html'));
 
   for (const f of src) {
     if (f.rel !== CURRENCY_OWNER) {
@@ -378,9 +382,30 @@ async function scan() {
   return bad;
 }
 
+/**
+ * COVERAGE. The command line will live under src/cli/, and help text is where a quoted shell
+ * prompt tends to appear. A currency symbol planted in a quoted string there, in a .js or a .mjs
+ * module, must fail this gate's real scan; the same text in a template literal must not.
+ * @returns {Promise<number>}
+ */
+export async function coverageControl() {
+  const symbol = String.fromCharCode(36);
+  const planted = 'export const USAGE = \'' + symbol + ' npx solebidder\';\n';
+  return coverageCases('gate-units', scan, [
+    { name: 'a currency symbol in a quoted string under src/cli/', files: { 'src/cli/help.js': planted } },
+    { name: 'a currency symbol in a quoted string in a .mjs module under src/cli/', files: { 'src/cli/help.mjs': planted } },
+  ], [
+    {
+      name: 'help text with no currency symbol in a quoted string',
+      files: { 'src/cli/help.js': 'export const USAGE = \'npx solebidder <name>\';\n' },
+    },
+  ]);
+}
+
 if (isMain(import.meta.url)) {
   const selftestOnly = process.argv.includes('--selftest');
   let failures = selftest();
+  failures += await coverageControl();
   if (!selftestOnly) failures += await scan();
   console.log(failures === 0 ? '\ngate-units: PASS' : '\ngate-units: FAIL (' + failures + ')');
   process.exit(failures === 0 ? 0 : 1);

@@ -35,7 +35,7 @@ import {
   contrastRatio, relativeLuminance,
 } from '../src/core/tokens.js';
 import { BANNED_COLOURS, scanForBannedColours } from './banned-colours.mjs';
-import { shippedCopy, say, isMain } from './_shipped.mjs';
+import { REPO, shippedCopy, say, isMain, coverageCases } from './_shipped.mjs';
 
 /* -----------------------------------------------------------------------------------------
  * POSITIVE CONTROLS. Two kinds, and both are needed.
@@ -199,10 +199,14 @@ export function checkRamps() {
   return bad;
 }
 
-async function checkBannedColours() {
+/**
+ * @param {string} [root] The tree to scan. The repository, except in the coverage controls.
+ * @returns {Promise<number>}
+ */
+export async function checkBannedColours(root = REPO) {
   say.head('gate-contrast: banned house colours');
   let bad = 0;
-  for (const f of await shippedCopy()) {
+  for (const f of await shippedCopy(root)) {
     for (const h of scanForBannedColours(f.text, f.rel)) {
       say.fail(f.rel + ':' + h.line + '  ' + h.value);
       console.log('          ' + h.why);
@@ -214,9 +218,26 @@ async function checkBannedColours() {
   return bad;
 }
 
+/**
+ * COVERAGE. A banned house colour planted under src/cli/ or in USAGE.md must fail this gate's
+ * real scan. The command line prints no colour that carries meaning, but a banned literal in
+ * its source would still be a literal somebody could reach for.
+ * @returns {Promise<number>}
+ */
+export async function coverageControl() {
+  const banned = BANNED_COLOURS[0].value;
+  return coverageCases('gate-contrast', checkBannedColours, [
+    { name: 'a banned colour in a module under src/cli/', files: { 'src/cli/style.js': 'export const INK = \'' + banned + '\';\n' } },
+    { name: 'a banned colour in USAGE.md', files: { 'USAGE.md': 'Ink ' + banned + ' on the ground.\n' } },
+  ], [
+    { name: 'a module with no colour literal at all', files: { 'src/cli/style.js': 'export const INK = null;\n' } },
+  ]);
+}
+
 if (isMain(import.meta.url)) {
   const selftestOnly = process.argv.includes('--selftest');
   let failures = selftest();
+  failures += await coverageControl();
   if (!selftestOnly) {
     failures += checkPairs();
     failures += checkRamps();

@@ -28,7 +28,9 @@
 import { NEVER_CLAIMED_ITEMS, NEVER_CLAIMED_COUNT } from '../src/core/never-claimed.js';
 import { BANNED, scanText, maskPermitted } from './banned-vocabulary.mjs';
 import { stripComments } from './gate-units.mjs';
-import { REPO, shippedCopy, sourceFiles, say, isMain, VOCABULARY_EXEMPT } from './_shipped.mjs';
+import {
+  REPO, shippedCopy, sourceFiles, say, isMain, VOCABULARY_EXEMPT, coverageCases,
+} from './_shipped.mjs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -122,11 +124,15 @@ async function checkPresence() {
   return bad;
 }
 
-async function checkAbsence() {
+/**
+ * @param {string} [root] The tree to scan. The repository, except in the coverage controls.
+ * @returns {Promise<number>}
+ */
+export async function checkAbsence(root = REPO) {
   say.head('gate-vocabulary: no banned phrasing in the shipped copy');
   let bad = 0;
-  const copy = await shippedCopy();
-  const src = await sourceFiles();
+  const copy = await shippedCopy(root);
+  const src = await sourceFiles(root);
   const srcPaths = new Set(src.map((f) => f.rel));
   const exempt = new Set(VOCABULARY_EXEMPT.map((e) => e.file));
   for (const e of VOCABULARY_EXEMPT) say.note('exempt: ' + e.file + '  ' + e.reason);
@@ -158,9 +164,45 @@ async function checkAbsence() {
   return bad;
 }
 
+/**
+ * COVERAGE. The command line will live under src/cli/ and its long form documentation in
+ * USAGE.md. A banned phrase planted in either must fail this gate's real scan, and so must one
+ * in the README and under docs/, while a comment that merely names a banned term, which the scan
+ * strips from source, must not.
+ * @returns {Promise<number>}
+ */
+export async function coverageControl() {
+  const claim = 'See everything the company gets from the government.';
+  const plain = 'Type a federal contractor and read what the record says.';
+  const lines = (...l) => l.join('\n') + '\n';
+  return coverageCases('gate-vocabulary', checkAbsence, [
+    { name: 'a banned phrase in USAGE.md', files: { 'USAGE.md': lines(claim) } },
+    { name: 'a banned phrase in README.md', files: { 'README.md': lines(claim) } },
+    { name: 'a banned phrase under docs/', files: { 'docs/cli.md': lines(claim) } },
+    {
+      name: 'a banned phrase in a string under src/cli/',
+      files: { 'src/cli/help.js': lines("export const HELP = '" + claim + "';") },
+    },
+    {
+      name: 'a banned phrase in a .mjs module under src/cli/',
+      files: { 'src/cli/help.mjs': lines("export const HELP = '" + claim + "';") },
+    },
+  ], [
+    {
+      name: 'ordinary copy in USAGE.md and src/cli/, and a banned term inside a source comment',
+      files: {
+        'USAGE.md': lines(plain),
+        'src/cli/help.js': lines('// The word revenue is named here only to say it is never printed.',
+          "export const HELP = '" + plain + "';"),
+      },
+    },
+  ]);
+}
+
 if (isMain(import.meta.url)) {
   const selftestOnly = process.argv.includes('--selftest');
   let failures = selftest();
+  failures += await coverageControl();
   if (!selftestOnly) {
     failures += await checkPresence();
     failures += await checkAbsence();

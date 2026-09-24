@@ -23,7 +23,8 @@
 // why those claims are forbidden. Nothing in src/ is exempt as a file; only the comments are.
 //
 // scripts/ is not scanned at all, because the registry of banned terms lives there and a
-// registry that cannot name what it bans is not a registry. Nothing under scripts/ is served.
+// registry that cannot name what it bans is not a registry. Nothing under scripts/ is loaded by
+// the page or packed for npm, though GitHub Pages serves it at its path.
 
 import { NEVER_CLAIMED_ITEMS, NEVER_CLAIMED_COUNT } from '../src/core/never-claimed.js';
 import { BANNED, scanText, maskPermitted } from './banned-vocabulary.mjs';

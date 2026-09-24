@@ -1,9 +1,11 @@
 // THE BANNED VOCABULARY. The enforcement half of DESIGN 2.4, the NEVER CLAIMED list.
 //
-// THIS FILE NEVER SHIPS. It lives under scripts/ for the same reason the banned colour literal
-// does: a file that has to NAME the forbidden strings in order to forbid them cannot also be a
-// file that is served to a visitor. src/ therefore needs no exemption from its own gate, which
-// is a stronger arrangement than exempting the registry and hoping the exemption stays narrow.
+// THE PAGE NEVER LOADS THIS FILE AND THE PACKAGE NEVER CARRIES IT. It lives under scripts/ for
+// the same reason the banned colour literal does: a file that has to NAME the forbidden strings
+// in order to forbid them cannot also be a module the page or the command line runs. It is not
+// secret, and GitHub Pages serves it at its path like every committed file. src/ therefore
+// needs no exemption from its own gate, which is a stronger arrangement than exempting the
+// registry and hoping the exemption stays narrow.
 //
 // HOW THE SCAN WORKS, and the masking step is the whole trick. The ten NEVER CLAIMED statements
 // in src/core/never-claimed.js are the ONLY permitted phrasing for these terms. The scanner

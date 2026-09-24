@@ -17,7 +17,8 @@
 // the parent profile total and the child rollup. That is what makes the rollup panel render the
 // case the design is about rather than a tidy zero.
 //
-// Nothing in this file ships. It lives under scripts/, which is the one exempt directory.
+// Nothing in this file is loaded by the shipped page or packed for npm. It lives under
+// scripts/, which is the one exempt directory.
 
 /** The parent total, one cent under the child rollup, so the residual is the measured cent. */
 export const PROBE_CHILD_SUM = 1000;

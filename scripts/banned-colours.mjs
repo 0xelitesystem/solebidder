@@ -1,8 +1,9 @@
 // The banned house colour values, and the scan for them.
 //
 // This file exists separately from src/core/tokens.js for one reason: tokens.js SHIPS, and a
-// file that has to name a forbidden literal in order to forbid it must not be a file that is
-// served. Keeping the literals here means the shipped palette contains only colours that pass.
+// file that has to name a forbidden literal in order to forbid it must not be a file the page
+// loads. Keeping the literals here means the palette the page paints contains only colours
+// that pass. The page never loads this file, though GitHub Pages serves it at its path.
 //
 // Each entry is a number rather than a preference. #6b7280 against #0a0a0a computes to 4.10,
 // which is under the AA threshold of 4.5 for normal text, and it reached many repositories

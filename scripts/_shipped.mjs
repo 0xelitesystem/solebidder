@@ -8,7 +8,9 @@
 //
 //   scripts/   the gates themselves and their positive control fixtures, which must contain
 //              violations in order to prove the violations are detected. Nothing under scripts/
-//              is ever served to a visitor.
+//              is loaded by the page or packed for npm. It is not hidden: GitHub Pages serves
+//              the repository root, so these files can be fetched at their paths. They are
+//              exempt because they are tooling that has to name what it forbids.
 //
 // The registry of BANNED terms lives in scripts/banned-vocabulary.mjs precisely so that src/
 // needs no exemption for it. Exactly one file under src/ is exempt from one gate, and only from

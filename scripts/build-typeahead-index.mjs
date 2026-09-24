@@ -17,8 +17,9 @@
 // that entire question cannot arise, and the bundle becomes what it should be: a fast way to
 // find a NAME, with every number on the page still fetched live.
 //
-// THIS SCRIPT IS NEVER SERVED. It runs in Node, where the browser network allowlist does not
-// apply, and the flagship host check skips scripts/ for exactly that reason. It builds its own
+// THIS SCRIPT NEVER RUNS IN THE PAGE. It runs in Node, where the browser network allowlist does
+// not apply, and the flagship host check skips scripts/ for exactly that reason. GitHub Pages
+// serves it at its path like every committed file, but nothing loads it. It builds its own
 // request body rather than importing the browser request builder, because the builder correctly
 // refuses a query with no recipient filter and this query deliberately has none: it is asking
 // the source who the largest recorded recipients are.

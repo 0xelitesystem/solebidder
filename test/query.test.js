@@ -10,7 +10,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { API_ORIGIN, MAX_CONCURRENCY, MAX_PAGE_LIMIT, SUBAWARDS } from '../src/core/constants.js';
-import { requireFiscalYear, fiscalYearRange, timePeriod, fiscalYearSpan } from '../src/query/fiscal-year.js';
+import {
+  requireFiscalYear, fiscalYearRange, timePeriod, fiscalYearSpan, fiscalYearOf, fiscalYearWindow,
+} from '../src/query/fiscal-year.js';
 import { buildAwardSearchBody, filterRowsToEntitySet, AWARD_FIELDS } from '../src/query/award-query.js';
 import {
   url, recipientProfileRequest, recipientChildrenRequest, lastUpdatedRequest, awardDetailRequest,
@@ -139,6 +141,34 @@ test('the fiscal year span is floored at the year the data starts', () => {
 test('a future or pre floor fiscal year is refused', () => {
   assert.throws(() => requireFiscalYear(2007, 't'), RangeError);
   assert.throws(() => requireFiscalYear(new Date().getUTCFullYear() + 5, 't'), RangeError);
+});
+
+test('THE NEXT FISCAL YEAR IS REFUSED UNTIL IT STARTS, not from January of the calendar year '
+  + 'before it', () => {
+  // The old bound was the calendar year plus one, which admitted FY2027 on 15 January 2026,
+  // eight and a half months before FY2027 begins on 1 October 2026.
+  const january = new Date(Date.UTC(2026, 0, 15));
+  assert.throws(() => requireFiscalYear(2027, 't', january), /in the future/);
+  assert.equal(requireFiscalYear(2026, 't', january), 2026, 'the current fiscal year is open');
+
+  // The last day of FY2026 and the first day of FY2027, judged in UTC like fiscalYearOf.
+  const lastDay = new Date(Date.UTC(2026, 8, 30, 23, 59));
+  const firstDay = new Date(Date.UTC(2026, 9, 1, 0, 0));
+  assert.throws(() => requireFiscalYear(2027, 't', lastDay), RangeError);
+  assert.equal(requireFiscalYear(2027, 't', firstDay), 2027);
+});
+
+test('the fiscal year window lives in the query layer and bounds every picker the same way', () => {
+  assert.equal(fiscalYearOf(new Date(Date.UTC(2026, 8, 30))), 2026);
+  assert.equal(fiscalYearOf(new Date(Date.UTC(2026, 9, 1))), 2027);
+  const w = fiscalYearWindow(new Date(Date.UTC(2026, 8, 24)));
+  assert.deepEqual(w, { latest: 2026, defaultYear: 2025 });
+  // Whatever the window offers, the request builders accept, on the same day.
+  const today = new Date(Date.UTC(2026, 8, 24));
+  assert.equal(requireFiscalYear(w.latest, 't', today), w.latest);
+  assert.throws(() => requireFiscalYear(w.latest + 1, 't', today), RangeError);
+  assert.deepEqual(fiscalYearWindow(new Date(Date.UTC(2008, 0, 1))), { latest: 2008, defaultYear: 2008 },
+    'the default never falls under the floor');
 });
 
 /* ---------------------------------------------------------------------------------------------

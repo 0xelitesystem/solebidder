@@ -44,8 +44,9 @@ import { createTypeahead } from '../api/typeahead.js';
 import { METHODS } from '../core/claim.js';
 import { tallyClaim } from '../analysis/share.js';
 import {
-  DEFAULT_AWARD_TYPE_SET, FISCAL_YEAR_FLOOR, HERO_AWARD_COUNT, MAX_CONCURRENCY,
+  DEFAULT_AWARD_TYPE_SET, HERO_AWARD_COUNT, MAX_CONCURRENCY,
 } from '../core/constants.js';
+import { fiscalYearWindow } from '../query/fiscal-year.js';
 import { failure, INCOMPLETE_ROLLUP, MALFORMED_RESPONSE } from '../query/failure.js';
 import {
   spineChart, agencyMixChart, soleBidderChart, largestAwardsChart, concentrationCurveChart,
@@ -159,27 +160,10 @@ export const HOOK_EXAMPLE = Object.freeze({
   rowNoun: 'awarding agency',
 });
 
-/**
- * The fiscal year a date falls in. The federal fiscal year starts on the first of October, so
- * October through December belong to the NEXT calendar year's fiscal year.
- * @param {Date} date
- * @returns {number}
- */
-export function fiscalYearOf(date) {
-  return date.getUTCMonth() >= 9 ? date.getUTCFullYear() + 1 : date.getUTCFullYear();
-}
-
-/**
- * The year the control defaults to: the most recently COMPLETED fiscal year. The current one is
- * selectable and it is partial by definition, which is a fact about the calendar rather than a
- * defect, but it is not the year a reader should land on without having asked for it.
- * @param {Date} date
- * @returns {{latest:number, defaultYear:number}}
- */
-export function fiscalYearWindow(date) {
-  const latest = fiscalYearOf(date);
-  return { latest, defaultYear: Math.max(FISCAL_YEAR_FLOOR, latest - 1) };
-}
+// The fiscal year of a date, and the window the period control offers, live in the query layer
+// beside the rule that refuses a year that has not started. They are re-exported here so the
+// page's existing importers keep working, and the command line reads the same bounds.
+export { fiscalYearOf, fiscalYearWindow } from '../query/fiscal-year.js';
 
 /**
  * The award search request. It is assembled here rather than in src/query/endpoints.js because

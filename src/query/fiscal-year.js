@@ -20,23 +20,53 @@
 import { FISCAL_YEAR_FLOOR } from '../core/constants.js';
 
 /**
- * Assert an explicit fiscal year. Every request builder calls this first.
- * @param {unknown} fiscalYear
- * @param {string} where Name of the caller, quoted in the message.
+ * The fiscal year a date falls in. The federal fiscal year starts on the first of October, so
+ * October through December belong to the NEXT calendar year's fiscal year.
+ * @param {Date} date
  * @returns {number}
  */
-export function requireFiscalYear(fiscalYear, where) {
+export function fiscalYearOf(date) {
+  return date.getUTCMonth() >= 9 ? date.getUTCFullYear() + 1 : date.getUTCFullYear();
+}
+
+/**
+ * The years a reader may pick, as of a date. The upper bound is the fiscal year the date falls
+ * in, and nothing after it exists yet. The default is the most recently COMPLETED fiscal year: the
+ * current one is selectable and it is partial by definition, which is a fact about the calendar
+ * rather than a defect, but it is not the year a reader should land on without having asked for
+ * it. The page control and the command line both read their bounds from here, so the two can
+ * never offer different years.
+ * @param {Date} date
+ * @returns {{latest:number, defaultYear:number}}
+ */
+export function fiscalYearWindow(date) {
+  const latest = fiscalYearOf(date);
+  return { latest, defaultYear: Math.max(FISCAL_YEAR_FLOOR, latest - 1) };
+}
+
+/**
+ * Assert an explicit fiscal year. Every request builder calls this first.
+ *
+ * THE CEILING IS THE CURRENT FISCAL YEAR, not the calendar year plus one. The calendar bound
+ * used to admit the next fiscal year from January to September, months before it starts on the
+ * first of October, and a year that has not started has nothing to report.
+ *
+ * @param {unknown} fiscalYear
+ * @param {string} where Name of the caller, quoted in the message.
+ * @param {Date} [today] The clock to judge the future by. Defaults to now; a test pins it.
+ * @returns {number}
+ */
+export function requireFiscalYear(fiscalYear, where, today = new Date()) {
   if (typeof fiscalYear !== 'number' || !Number.isInteger(fiscalYear)) {
     throw new TypeError(where + ': an explicit integer fiscalYear is required. There is no '
       + 'default period in this product, because a default period is how a parent total and a '
       + 'child rollup end up measured over different windows and published as one figure.');
   }
-  const thisYear = new Date().getUTCFullYear();
   if (fiscalYear < FISCAL_YEAR_FLOOR) {
     throw new RangeError(where + ': fiscalYear must be ' + FISCAL_YEAR_FLOOR + ' or later. The '
       + 'search API holds nothing awarded before 1 October 2007.');
   }
-  if (fiscalYear > thisYear + 1) {
+  if (fiscalYear > fiscalYearOf(today)) {
     throw new RangeError(where + ': fiscalYear ' + fiscalYear + ' is in the future. A fiscal year '
       + 'that has not started has no obligations to report and an empty answer would be shown as '
       + 'a real zero.');

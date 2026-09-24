@@ -573,8 +573,8 @@ test('a body the validator cannot read is a named failure and nothing is display
  * ------------------------------------------------------------------------------------------- */
 
 test('no module in this layer names the legacy vendor identifier or the rolling window', async () => {
-  const files = ['api.js', 'categories.js', 'children.js', 'parent.js', 'reconcile.js',
-    'source-date.js', 'timeseries.js', 'typeahead.js', 'typeahead-index.js'];
+  const files = ['api.js', 'categories.js', 'children.js', 'hero.js', 'parent.js', 'reconcile.js',
+    'second-definition.js', 'source-date.js', 'timeseries.js', 'typeahead.js', 'typeahead-index.js'];
   for (const file of files) {
     const src = await readFile(path.join(REPO, 'src', 'api', file), 'utf8');
     assert.equal(/\bduns\b/i.test(src), false, file + ' names the legacy vendor identifier');

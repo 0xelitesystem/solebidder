@@ -184,7 +184,7 @@ test('every tally noun the product actually ships survives its own guard', () =>
   // hand to a tally is parsed out and run through the pluraliser in both cardinalities.
   const files = ['src/analysis/competition.js', 'src/analysis/concentration.js',
     'src/analysis/over-time.js', 'src/analysis/rollup.js', 'src/analysis/index.js',
-    'src/api/parent.js', 'src/api/children.js', 'src/ui/app.js'];
+    'src/api/parent.js', 'src/api/children.js', 'src/api/hero.js', 'src/ui/app.js'];
   const nouns = new Set();
   for (const f of files) {
     const text = read(f);

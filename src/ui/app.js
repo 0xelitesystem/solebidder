@@ -29,25 +29,21 @@
 // call it with a stub document and a stub api and drive the whole page in milliseconds.
 
 import { createApi } from '../api/api.js';
-import { url, awardDetailRequest, validateAwardDetail, validateSpendingByAward } from '../query/endpoints.js';
-import { buildAwardSearchBody, filterRowsToEntitySet } from '../query/award-query.js';
-import { staleLinkageDisclosures } from '../identity/stale-tree.js';
 import {
-  soleBidderShare, oneOfferShare, competitionRows,
-  topRowShare, herfindahlIndex, cumulativeConcentration, topAwardShare,
-  obligationsByYear,
-} from '../analysis/index.js';
+  metaOf, searchLargestAwards, fetchCompetitionRecords, assembleHero, assemblyFailure, HERO_WHAT,
+} from '../api/hero.js';
+import {
+  fetchEntityBreakdown, fetchSecondDefinitionArms, secondDefinition, SECOND_DEFINITION_WHAT,
+} from '../api/second-definition.js';
+import { staleLinkageDisclosures } from '../identity/stale-tree.js';
+import { topRowShare, herfindahlIndex, obligationsByYear } from '../analysis/index.js';
 import { categoryRowClaims } from '../api/categories.js';
-import { methodDelta } from '../analysis/rollup.js';
 import { parseIndex } from '../api/typeahead-index.js';
 import { createTypeahead } from '../api/typeahead.js';
 import { METHODS } from '../core/claim.js';
-import { tallyClaim } from '../analysis/share.js';
-import {
-  DEFAULT_AWARD_TYPE_SET, HERO_AWARD_COUNT, MAX_CONCURRENCY,
-} from '../core/constants.js';
+import { DEFAULT_AWARD_TYPE_SET } from '../core/constants.js';
 import { fiscalYearWindow } from '../query/fiscal-year.js';
-import { failure, INCOMPLETE_ROLLUP, MALFORMED_RESPONSE } from '../query/failure.js';
+import { failure, MALFORMED_RESPONSE } from '../query/failure.js';
 import {
   spineChart, agencyMixChart, soleBidderChart, largestAwardsChart, concentrationCurveChart,
   revealSentence,
@@ -165,32 +161,10 @@ export const HOOK_EXAMPLE = Object.freeze({
 // page's existing importers keep working, and the command line reads the same bounds.
 export { fiscalYearOf, fiscalYearWindow } from '../query/fiscal-year.js';
 
-/**
- * The award search request. It is assembled here rather than in src/query/endpoints.js because
- * the body builder lives in its own module ON PURPOSE: that module has no recipient id parameter
- * at all, and the field name does not appear anywhere in it. The award search endpoint SILENTLY
- * IGNORES a recipient id filter, and four different filters returned byte identical results
- * topped by an entirely different company, so the only filter that does anything is the name
- * text and every returned row is validated against the resolved entity set afterwards.
- *
- * @param {any} identity
- * @param {number} [limit]
- * @returns {{id:string, method:'POST', url:string, body:object, weight:'heavy'}}
- */
-export function awardSearchRequest(identity, limit = HERO_AWARD_COUNT) {
-  return {
-    id: 'spendingByAward',
-    method: 'POST',
-    url: url('/api/v2/search/spending_by_award/'),
-    body: buildAwardSearchBody({
-      recipientSearchText: identity.name,
-      fiscalYear: identity.fiscalYear,
-      awardTypeSetId: identity.awardTypeSetId,
-      limit,
-    }),
-    weight: 'heavy',
-  };
-}
+// The award search request, and the whole hero assembly behind it, live in src/api/hero.js so
+// that the page and the command line build the hero through the same code. Re-exported here for
+// the page's existing importers.
+export { awardSearchRequest } from '../api/hero.js';
 
 /**
  * The default index loader. It is a function rather than an inline fetch so that the whole page
@@ -444,16 +418,25 @@ export function boot(doc, deps = {}) {
       onRetry: () => choose(choice),
     }));
 
-    // The parent reported total is the denominator of the second definition and the anchor of
-    // the third reconciliation arm. It is held on state rather than refetched, so both of them
-    // difference against the SAME figure the subject panel printed.
+    // The parent reported total is the anchor of the third reconciliation arm. It is held on
+    // state rather than refetched, so that arm differences against the SAME figure the subject
+    // panel printed. The second definition does not use it: see src/api/second-definition.js.
     state.parentReportedTotal = subject.profile.totalObligations;
+
+    // THE ENTITY BREAKDOWN IS PAGED ONCE. It is definition one of the second definition and the
+    // third arm of the reconciliation, and it used to be paged twice, once for each. Both
+    // consumers now await this one request.
+    const breakdown = regions.definition || regions.rollup
+      ? fetchEntityBreakdown(api, identity, {
+        onCold: () => coldNotice(regions.rollup, 'the entity breakdown'),
+      })
+      : null;
 
     loadHero(identity, gen);
     loadSpine(identity, gen);
     loadMix(identity, gen);
-    loadSecondDefinition(identity, gen);
-    loadThirdArm(identity, gen);
+    loadSecondDefinition(identity, gen, breakdown);
+    loadThirdArm(identity, gen, breakdown);
   }
 
   /* ---- wave two: the hero ---- */
@@ -464,102 +447,68 @@ export function boot(doc, deps = {}) {
    */
   async function loadHero(identity, gen) {
     mount(regions.hero, skeletonPanel(doc, 'the largest contracts and their competition fields'));
-    const result = await api.client.request(
-      awardSearchRequest(identity),
-      validateSpendingByAward,
-      {
-        what: 'the largest contracts active in the fiscal year',
-        onCold: () => coldNotice(regions.hero, 'the largest contracts'),
-      },
-    );
+
+    // The figures are assembled in src/api/hero.js, the same code the command line runs. What
+    // stays here is where each result lands, how it is drawn, and the two points at which a
+    // reader who has moved to another period stops the work: after the search, so a stale
+    // search never spends the detail requests, and after the fan out.
+    const search = await searchLargestAwards(api.client, identity, {
+      onCold: () => coldNotice(regions.hero, 'the largest contracts'),
+    });
     if (stale(gen)) return;
-    if (!result.ok) {
-      mount(regions.hero, failurePanel(doc, result.failure, () => loadHero(identity, gen)));
+    if (!search.ok) {
+      // An emptied set is not a request that failed: asking again returns the same rows and
+      // drops them again, so it offers no retry.
+      mount(regions.hero, failurePanel(doc, search.failure,
+        search.emptied ? undefined : () => loadHero(identity, gen)));
       return;
     }
 
-    // TRAP 1, handled here because this is where the rows land. Every returned row is validated
-    // against the resolved entity set, and the count that did not belong is shown on the page.
-    // The rows arriving here have already been through the response validator, which projects
-    // the recipient column to a camel case name; filterRowsToEntitySet reads that spelling
-    // directly, so nothing is re-aliased at this call site. A row whose recipient cannot be read
-    // is excluded, which is the safe direction.
-    const filtered = filterRowsToEntitySet(result.value.rows, identity.entityNamesUpper);
-    const meta = metaOf(identity);
-    const excludedRowCountClaim = tallyClaim(filtered.excludedCount, 'dropped award row',
-      METHODS.SOLE_BIDDER_SHARE, meta,
-      'Rows the award search endpoint returned whose recipient is not in the resolved entity set. '
-      + 'That endpoint ignores a recipient filter entirely, so the rows are checked here against '
-      + 'the parent and its registered children, and the ones that did not belong are dropped '
-      + 'from every figure on this page and counted in the open rather than swallowed.');
-
-    if (filtered.kept.length === 0) {
-      mount(regions.hero, failurePanel(doc, failure(INCOMPLETE_ROLLUP,
-        'the competition split for the largest contracts',
-        { parts: { arrived: 0, expected: result.value.rows.length } })));
-      return;
-    }
-
-    const tasks = filtered.kept.map((row) => () => api.client.request(
-      awardDetailRequest(row.generatedInternalId),
-      validateAwardDetail,
-      { what: 'the competition record for one contract' },
-    ));
-    const settled = await api.client.mapWithCap(tasks, MAX_CONCURRENCY);
+    const awardDetails = await fetchCompetitionRecords(api.client, search.kept);
     if (stale(gen)) return;
 
-    const awardDetails = settled.filter((d) => d && d.ok).map((d) => d.value);
-    // COMPUTED, not REPORTED. The competition FIELDS are reported; how many of them arrived is
-    // our own count over the fan out, and it has its own method so that the provenance line
-    // states what was counted rather than borrowing the wording of the share below it.
-    const detailCountClaim = tallyClaim(awardDetails.length, 'arrived competition record',
-      METHODS.RESPONSE_COVERAGE_COUNT, meta,
-      'Contracts in the set whose own competition record answered. A contract whose record did '
-      + 'not arrive is counted in neither direction rather than assumed either way.');
+    const assembled = assembleHero({ kept: search.kept, awardDetails, meta: search.meta });
+    const { hero, concentration } = assembled;
 
-    try {
-      const soleBidder = soleBidderShare({ awardRows: filtered.kept, awardDetails, meta });
-      const oneOffer = oneOfferShare({ awardRows: filtered.kept, awardDetails, meta });
-      const awards = competitionRows({ awardRows: filtered.kept, awardDetails, meta });
-      mount(regions.hero, heroPanel(doc, {
-        soleBidder,
-        oneOffer,
-        awards: awards.map((row, i) => ({
-          ...row,
-          generatedInternalId: filtered.kept[i].generatedInternalId,
-        })),
-        excludedRowCountClaim,
-        detailCountClaim,
-        reveal: revealSentence(identity),
-        chart: soleBidder.available === true
-          ? soleBidderChart({ soleBidder, identity })
-          : null,
-      }));
-
-    } catch (e) {
-      mount(regions.hero, failurePanel(doc, failure(MALFORMED_RESPONSE,
-        'the competition split', { detail: String(e && e.message) })));
+    if (!hero.ok) {
+      mount(regions.hero, failurePanel(doc, hero.failure));
+    } else {
+      try {
+        mount(regions.hero, heroPanel(doc, {
+          soleBidder: hero.soleBidder,
+          oneOffer: hero.oneOffer,
+          awards: hero.awards,
+          excludedRowCountClaim: search.excludedRowCountClaim,
+          detailCountClaim: assembled.detailCountClaim,
+          reveal: revealSentence(identity),
+          chart: hero.soleBidder.available === true
+            ? soleBidderChart({ soleBidder: hero.soleBidder, identity })
+            : null,
+        }));
+      } catch (e) {
+        mount(regions.hero, failurePanel(doc, assemblyFailure(HERO_WHAT.hero, e)));
+      }
     }
 
-    // The concentration panel is built in its OWN try block. It is drawn from the same rows, but
-    // a defect there must cost that panel and not the hero above it: every panel fails on its
-    // own, and two panels sharing one catch is how one bug blanks two answers.
+    // The concentration panel fails on its OWN. It is drawn from the same rows, but a defect
+    // there must cost that panel and not the hero above it: two panels sharing one catch is how
+    // one bug blanks two answers.
+    if (!concentration.ok) {
+      mount(regions.concentration, failurePanel(doc, concentration.failure));
+      return;
+    }
     try {
-      const cumulative = cumulativeConcentration({ awardRows: filtered.kept, meta });
       mount(regions.concentration, concentrationPanel(doc, {
-        cumulative,
-        topAward: topAwardShare({ awardRows: filtered.kept, meta }),
-        curveChart: cumulative.available === true
-          ? concentrationCurveChart({ cumulative, identity })
+        cumulative: concentration.cumulative,
+        topAward: concentration.topAward,
+        curveChart: concentration.cumulative.available === true
+          ? concentrationCurveChart({ cumulative: concentration.cumulative, identity })
           : null,
-        awardsChart: largestAwardsChart({
-          awardRows: competitionRows({ awardRows: filtered.kept, awardDetails, meta }),
-          identity,
-        }),
+        awardsChart: largestAwardsChart({ awardRows: concentration.awardRows, identity }),
       }));
     } catch (e) {
-      mount(regions.concentration, failurePanel(doc, failure(MALFORMED_RESPONSE,
-        'the concentration view', { detail: String(e && e.message) })));
+      mount(regions.concentration, failurePanel(doc,
+        assemblyFailure(HERO_WHAT.concentration, e)));
     }
   }
 
@@ -658,59 +607,36 @@ export function boot(doc, deps = {}) {
    * are listed rather than folded into a range, because a range would imply the truth lies
    * between them and there is no single truth to lie between them.
    *
+   * Both arms, the refusal when either is missing, and the arithmetic live in
+   * src/api/second-definition.js, the same code the command line runs.
+   *
    * @param {any} identity
    * @param {number} gen
+   * @param {Promise<any>|null} [breakdown] The entity breakdown already in flight. A retry passes
+   *   none, so an arm that failed is asked for again rather than awaited a second time.
    */
-  async function loadSecondDefinition(identity, gen) {
+  async function loadSecondDefinition(identity, gen, breakdown = null) {
     if (!regions.definition) return;
-    const what = 'everything matching the name searched';
+    const what = SECOND_DEFINITION_WHAT;
     mount(regions.definition, skeletonPanel(doc, what));
 
-    // BOTH SIDES COME FROM ONE ENDPOINT UNDER ONE SET OF FILTERS, and the only difference
-    // between them is the filter itself: the identifier on one, the typed text on the other.
-    //
-    // The parent PROFILE total is deliberately not used as definition one, even though it is
-    // already on this page and would save a request. That endpoint takes no award type filter,
-    // so its figure always covers every award type, and differencing it against a name match
-    // restricted to contracts would publish a gap that is partly the award type control rather
-    // than the definition. Measured on one large prime for FY2025 the two inputs differ by
-    // roughly 671 million dollars, and it is the kind of difference that looks like a finding.
-    const [named, byId] = await Promise.all([
-      api.nameMatchTotal({
-        text: state.queryText.length > 0 ? state.queryText : identity.name,
-        fiscalYear: identity.fiscalYear,
-        awardTypeSetId: identity.awardTypeSetId,
-        sourceAsOf: identity.sourceAsOf,
-        onCold: () => coldNotice(regions.definition, what),
-      }),
-      api.entityBreakdown({
-        recipientId: identity.recipientId,
-        fiscalYear: identity.fiscalYear,
-        awardTypeSetId: identity.awardTypeSetId,
-      }),
-    ]);
+    const arms = await fetchSecondDefinitionArms(api, {
+      identity,
+      queryText: state.queryText,
+      breakdown,
+      onCold: () => coldNotice(regions.definition, what),
+    });
     if (stale(gen)) return;
-    const result = named;
-    // Either both arms arrive or the panel says so. A gap computed against a denominator that
-    // did not answer would be a figure about nothing, and half of a comparison is not a
-    // comparison: there is no substitute figure that belongs in that slot.
-    if (!named.ok || !byId.ok) {
-      mount(regions.definition, failurePanel(doc, named.ok ? byId.failure : named.failure,
-        () => loadSecondDefinition(identity, gen)));
+    const result = secondDefinition({ ...arms, identity });
+    if (!result.ok) {
+      mount(regions.definition, failurePanel(doc, result.failure,
+        result.armFailed ? () => loadSecondDefinition(identity, gen) : undefined));
       return;
     }
     try {
-      mount(regions.definition, secondDefinitionPanel(doc, methodDelta({
-        nameMatchRows: result.rows,
-        parentRollupTotal: byId.total,
-        parentEntityNamesUpper: identity.entityNamesUpper,
-        fiscalYear: identity.fiscalYear,
-        awardTypeSetId: identity.awardTypeSetId,
-        sourceAsOf: identity.sourceAsOf,
-      })));
+      mount(regions.definition, secondDefinitionPanel(doc, result.delta));
     } catch (e) {
-      mount(regions.definition, failurePanel(doc, failure(MALFORMED_RESPONSE, what,
-        { detail: String(e && e.message) })));
+      mount(regions.definition, failurePanel(doc, assemblyFailure(what, e)));
     }
   }
 
@@ -724,13 +650,16 @@ export function boot(doc, deps = {}) {
    *
    * @param {any} identity
    * @param {number} gen
+   * @param {Promise<any>|null} [breakdown] The entity breakdown already in flight, shared with
+   *   the second definition so it is paged once.
    */
-  async function loadThirdArm(identity, gen) {
+  async function loadThirdArm(identity, gen, breakdown = null) {
     if (!regions.rollup) return;
     const three = await api.reconcileThreeWays({
       identity,
       parentReportedTotal: state.parentReportedTotal,
       sourceAsOf: identity.sourceAsOf,
+      breakdown,
       onCold: () => coldNotice(regions.rollup, 'the entity breakdown'),
     });
     if (stale(gen)) return;
@@ -812,14 +741,8 @@ export function boot(doc, deps = {}) {
 
   /* ---- shared ---- */
 
-  /** The provenance triple every claim on the page shares, taken from ONE resolved identity. */
-  function metaOf(identity) {
-    return {
-      fiscalYear: identity.fiscalYear,
-      awardTypeSetId: identity.awardTypeSetId,
-      sourceAsOf: identity.sourceAsOf === undefined ? null : identity.sourceAsOf,
-    };
-  }
+  // metaOf, the provenance triple every claim shares, is imported from src/api/hero.js so the
+  // page and the command line take it from ONE resolved identity the same way.
 
   function coldNotice(regionNode, what) {
     if (!regionNode || typeof regionNode.querySelector !== 'function') return;

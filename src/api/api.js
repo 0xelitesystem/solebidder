@@ -124,16 +124,22 @@ export function createApi(deps = {}) {
      *
      * A failed breakdown does NOT take the panel down. The two arm reconciliation from wave one
      * already stands on its own, so this returns it with a note about the arm that is missing.
+     *
+     * The same breakdown is definition one of the second definition. A caller that has already
+     * started it passes it as args.breakdown, a promise or a settled result, and it is awaited
+     * here rather than paged a second time.
      */
     async reconcileThreeWays(args) {
-      const breakdown = await fetchCategoryTotal(client, {
-        dimension: 'recipient',
-        recipientId: args.identity.recipientId,
-        fiscalYear: args.identity.fiscalYear,
-        awardTypeSetId: args.identity.awardTypeSetId,
-        signal: args.signal,
-        onCold: args.onCold,
-      });
+      const breakdown = args.breakdown === undefined || args.breakdown === null
+        ? await fetchCategoryTotal(client, {
+          dimension: 'recipient',
+          recipientId: args.identity.recipientId,
+          fiscalYear: args.identity.fiscalYear,
+          awardTypeSetId: args.identity.awardTypeSetId,
+          signal: args.signal,
+          onCold: args.onCold,
+        })
+        : await args.breakdown;
       if (!breakdown.ok) {
         return {
           ok: true,

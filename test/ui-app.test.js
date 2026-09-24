@@ -764,3 +764,65 @@ test('a second definition with only ONE of its two arms refuses, because half a 
   assert.match(text, /Retry|did not respond/i);
   assert.doesNotMatch(text, /Two definitions of the company/);
 });
+
+/* ------------------------------------------------------------------------------------------ *
+ * THE AS OF DATE IS AWAITED BEFORE A CLAIM IS BUILT. The page used to read it off state at
+ * whatever moment a panel started, so a claim built before the date answered said the date was
+ * unavailable even though it arrived a moment later.
+ * ------------------------------------------------------------------------------------------ */
+
+test('A FAST PICK WAITS FOR THE AS OF DATE, so the subject is never built without it', async () => {
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  let askedWith;
+  const api = stubApi({
+    sourceAsOf: async () => {
+      await gate;
+      return { sourceAsOf: TEST_AS_OF, notice: null };
+    },
+  });
+  const load = api.loadSubject;
+  api.loadSubject = async (args) => {
+    askedWith = args.sourceAsOf;
+    return load(args);
+  };
+  const { doc, app } = bootPage(api);
+  await app.search('test parent');
+  await settle();
+  assert.equal(askedWith, undefined, 'the subject was loaded before the date had answered');
+
+  release();
+  await settle();
+  await settle();
+  assert.equal(askedWith, TEST_AS_OF);
+  assert.match(doc.getElementById('panel-subject').textContent, /TEST PARENT ENTITY/);
+});
+
+test('THE OPENING EXAMPLE CARRIES THE AS OF DATE rather than always reading it as unavailable',
+  async () => {
+    const doc = createDocument([...REGION_IDS, 'panel-hook', 'panel-hook-detail']);
+    boot(doc, { api: stubApi(), now: () => new Date(Date.UTC(2026, 8, 22)), loadIndexText: async () => '' });
+    await settle();
+    await settle();
+    assert.match(doc.getElementById('panel-hook').textContent, /TEST DEPARTMENT ALPHA/,
+      'the opening example never rendered');
+    // The provenance is on every badge in the headline and printed in full in the detail below.
+    const badges = doc.getElementById('panel-hook').querySelectorAll('[data-claim-badge]');
+    assert.ok(badges.length > 0);
+    for (const node of badges) {
+      assert.match(node.getAttribute('aria-label'), /Source as of 09\/21\/2026/);
+    }
+    const detail = doc.getElementById('panel-hook-detail').textContent;
+    assert.match(detail, /Source as of 09\/21\/2026/);
+    assert.doesNotMatch(detail, /Source as of date unavailable/);
+  });
+
+test('an as of request that throws costs the date and nothing else', async () => {
+  const api = stubApi({ sourceAsOf: async () => { throw new Error('socket closed'); } });
+  const { doc, app } = bootPage(api);
+  await app.search('test parent');
+  await settle();
+  await settle();
+  assert.equal(api.calls.loadSubject, 1, 'a missing date blocked the subject');
+  assert.match(doc.getElementById('panel-subject').textContent, /TEST PARENT ENTITY/);
+});

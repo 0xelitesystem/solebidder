@@ -245,6 +245,14 @@ export function boot(doc, deps = {}) {
   };
   const stale = (gen) => gen !== state.generation;
 
+  // THE AS OF DATE IS AWAITED BEFORE A CLAIM IS BUILT. It is asked for once, at boot, and every
+  // claim carries it in its provenance. Reading it off state without waiting raced the request:
+  // the opening example was built before the date could possibly have answered and always said
+  // the date was unavailable, and a fast pick could do the same to the subject. It is one small
+  // request that was started first, so waiting on it costs nothing once it has answered, and a
+  // failure is swallowed here because a missing date degrades a provenance line, never a figure.
+  let sourceAsOfReady = Promise.resolve();
+
   /* ---- controls and chips ---- */
 
   function paintControls() {
@@ -390,6 +398,10 @@ export function boot(doc, deps = {}) {
     const gen = bump();
     resetPanels();
     mount(regions.subject, skeletonPanel(doc, 'the entity profile and its registered children'));
+
+    // Every claim below carries the as of date, so it is in hand before the first one is built.
+    await sourceAsOfReady;
+    if (stale(gen)) return;
 
     const subject = await api.loadSubject({
       choice,
@@ -693,17 +705,21 @@ export function boot(doc, deps = {}) {
     mount(regions.hook, hookPanel(doc, { name: HOOK_EXAMPLE.name, pending: true }));
     mount(regions.hookMethod, null);
 
+    const request = api.category({
+      dimension: HOOK_EXAMPLE.dimension,
+      recipientSearchText: HOOK_EXAMPLE.name,
+      fiscalYear: hookFiscalYear,
+      awardTypeSetId: DEFAULT_AWARD_TYPE_SET,
+    });
+    // The as of date rides on this badge like every other, and both requests were started at
+    // boot side by side. The claim is built once both have answered, so it can never be built
+    // before the date could have arrived.
+    const [result] = await Promise.all([request, sourceAsOfReady]);
     const meta = {
       fiscalYear: hookFiscalYear,
       awardTypeSetId: DEFAULT_AWARD_TYPE_SET,
       sourceAsOf: state.sourceAsOf,
     };
-    const result = await api.category({
-      dimension: HOOK_EXAMPLE.dimension,
-      recipientSearchText: HOOK_EXAMPLE.name,
-      fiscalYear: meta.fiscalYear,
-      awardTypeSetId: meta.awardTypeSetId,
-    });
     if (!result || !result.ok) {
       mount(regions.hook, hookPanel(doc, {
         name: HOOK_EXAMPLE.name,
@@ -814,7 +830,7 @@ export function boot(doc, deps = {}) {
 
   paintControls();
   paintChips();
-  loadSourceAsOf();
+  sourceAsOfReady = loadSourceAsOf().catch(() => {});
   loadIndex();
   loadHook();
 

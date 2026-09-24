@@ -29,9 +29,9 @@ export const RATE_LIMITED = 'RATE_LIMITED';
 export const BAD_REQUEST = 'BAD_REQUEST';
 /** The response arrived but did not match the shape this endpoint is contracted to return. */
 export const MALFORMED_RESPONSE = 'MALFORMED_RESPONSE';
-/** The browser could not reach the host at all. */
+/** The host could not be reached at all, from whatever device is running this code. */
 export const NETWORK_UNREACHABLE = 'NETWORK_UNREACHABLE';
-/** The visitor navigated away or changed the query. Not an error, and never shown as one. */
+/** The query changed or the run was stopped. Not an error, and never shown as one. */
 export const ABORTED = 'ABORTED';
 /** Some pages arrived and some did not. The total is suppressed. */
 export const INCOMPLETE_ROLLUP = 'INCOMPLETE_ROLLUP';
@@ -77,7 +77,7 @@ export const FAILURE_SPEC = Object.freeze({
     kind: RATE_LIMITED,
     retryable: true,
     suppressesFigures: true,
-    template: 'USAspending asked this browser to slow down before it answered for {what}. No '
+    template: 'USAspending asked for requests to slow down before it answered for {what}. No '
       + 'published rate limit exists for this API, so this is taken at face value and the '
       + 'request was backed off rather than hammered.',
   }),
@@ -85,14 +85,14 @@ export const FAILURE_SPEC = Object.freeze({
     kind: BAD_REQUEST,
     retryable: false,
     suppressesFigures: true,
-    template: 'USAspending rejected the request for {what}. That is a defect in this page rather '
+    template: 'USAspending rejected the request for {what}. That is a defect in this tool rather '
       + 'than anything you did, and retrying will not change it.',
   }),
   [MALFORMED_RESPONSE]: Object.freeze({
     kind: MALFORMED_RESPONSE,
     retryable: false,
     suppressesFigures: true,
-    template: 'USAspending answered for {what} with a body this page could not read against the '
+    template: 'USAspending answered for {what} with a body this tool could not read against the '
       + 'shape it expects. Nothing is displayed, because guessing at a field that moved is how a '
       + 'wrong number gets published.',
   }),
@@ -100,15 +100,16 @@ export const FAILURE_SPEC = Object.freeze({
     kind: NETWORK_UNREACHABLE,
     retryable: true,
     suppressesFigures: true,
-    template: 'This browser could not reach USAspending for {what}. Every figure on this page is '
-      + 'fetched live from that one host and nothing is cached, so there is no offline copy to '
-      + 'fall back to.',
+    template: 'This device could not reach USAspending for {what}. Every figure here is fetched '
+      + 'live from that one host and nothing is cached, so there is no offline copy to fall back '
+      + 'to.',
   }),
   [ABORTED]: Object.freeze({
     kind: ABORTED,
     retryable: true,
     suppressesFigures: true,
-    template: 'The request for {what} was cancelled, usually because the query changed.',
+    template: 'The request for {what} was cancelled before it answered, usually because the '
+      + 'query changed or the run was stopped.',
   }),
   [INCOMPLETE_ROLLUP]: Object.freeze({
     kind: INCOMPLETE_ROLLUP,

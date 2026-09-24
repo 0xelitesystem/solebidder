@@ -54,7 +54,7 @@ export const CHANGE_UNAVAILABLE = Object.freeze({
     + 'money was released back than was committed. A percentage change measured against a '
     + 'negative base has no useful meaning, so the change is shown in dollars only.',
   BEYOND_RENDERABLE_RANGE: 'The change is larger than one hundred percent of the year before. '
-    + 'This page prints a share as a proportion between nought and one hundred percent, so the '
+    + 'This tool prints a share as a proportion between nought and one hundred percent, so the '
     + 'change is shown in dollars alongside both years rather than as a percentage.',
 });
 

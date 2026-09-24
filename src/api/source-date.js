@@ -18,10 +18,13 @@
 
 import { lastUpdatedRequest, validateLastUpdated } from '../query/endpoints.js';
 
-/** What the badge says when the call did not come back. */
-export const SOURCE_AS_OF_UNAVAILABLE = 'Source as of date unavailable. This page asks '
-  + 'USAspending for the date it publishes about its own data on every load, and that request '
-  + 'did not come back. The figures below are still live from the same source; only the date the '
+/**
+ * What the notice says when the call did not come back. Worded for any surface, because the page
+ * and the command line print the same sentence from this one constant.
+ */
+export const SOURCE_AS_OF_UNAVAILABLE = 'Source as of date unavailable. USAspending is asked for '
+  + 'the date it publishes about its own data every time figures are fetched, and that request '
+  + 'did not come back. The figures are still live from the same source; only the date the '
   + 'source states about itself is missing.';
 
 /**

@@ -13,6 +13,8 @@ import { API_ORIGIN, MAX_CONCURRENCY, MAX_PAGE_LIMIT, SUBAWARDS } from '../src/c
 import {
   requireFiscalYear, fiscalYearRange, timePeriod, fiscalYearSpan, fiscalYearOf, fiscalYearWindow,
 } from '../src/query/fiscal-year.js';
+import { SOURCE_AS_OF_UNAVAILABLE } from '../src/api/source-date.js';
+import { CHANGE_UNAVAILABLE } from '../src/analysis/over-time.js';
 import { buildAwardSearchBody, filterRowsToEntitySet, AWARD_FIELDS } from '../src/query/award-query.js';
 import {
   url, recipientProfileRequest, recipientChildrenRequest, lastUpdatedRequest, awardDetailRequest,
@@ -380,6 +382,22 @@ test('a failure is not a value and cannot be stringified into a figure', () => {
   assert.throws(() => String(f), TypeError);
   assert.throws(() => `${f}`, TypeError);
   assert.ok(Object.isFrozen(f));
+});
+
+test('THE SHARED TEMPLATES NAME NO SURFACE. The page and the command line print the same failure '
+  + 'sentences, the same as of notice and the same change reasons, so none of them may claim to '
+  + 'be a browser or a page', () => {
+  const sentences = [
+    ...FAILURE_KINDS.map((kind) => failure(kind, 'the agency breakdown').message),
+    SOURCE_AS_OF_UNAVAILABLE,
+    ...Object.values(CHANGE_UNAVAILABLE),
+  ];
+  assert.ok(sentences.length >= FAILURE_KINDS.length + 2);
+  for (const s of sentences) {
+    assert.doesNotMatch(s, /\bbrowser\b/i, 'a shared sentence names the browser: ' + s);
+    assert.doesNotMatch(s, /\bthis page\b|\bon every load\b|\bfigures below\b/i,
+      'a shared sentence names the page: ' + s);
+  }
 });
 
 test('an unnamed failure is refused, because a generic apology is not a failure state', () => {

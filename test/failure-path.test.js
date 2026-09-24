@@ -300,7 +300,7 @@ test('A 422 IS NOT RETRIED AND NO RETRY IS OFFERED, because retrying our own bad
 
   const region = doc.getElementById('panel-chooser');
   assert.match(region.textContent, /USAspending rejected the request/);
-  assert.match(region.textContent, /defect in this page rather than anything you did/);
+  assert.match(region.textContent, /defect in this tool rather than anything you did/);
   assert.match(region.textContent, /Retrying will not change this/);
   assert.equal(region.querySelectorAll('button').length, 0, 'a retry button was offered for a request that cannot succeed');
   assertFullyRouted(t);

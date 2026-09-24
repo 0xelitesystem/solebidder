@@ -135,7 +135,8 @@ Then open `index.html` in a browser, or serve the directory with any static serv
 ## Build
 
 ```
-npm run build          regenerate the palette and the claim boundary block in index.html
+npm run build          regenerate the palette, the claim boundary block and the footer
+                       disclaimer in index.html
 npm run build:check    regenerate to memory and compare by sha256
 npm run gates          run every gate, positive controls first
 npm run gates:selftest run only the positive controls
@@ -147,7 +148,8 @@ npm run measure:a11y   forced colours and 200 percent zoom in headless Edge
 The palette in the page is generated from `src/core/tokens.js`, which is the same file
 `scripts/gate-contrast.mjs` computes its WCAG arithmetic against, so the values that were checked
 and the values that paint cannot drift apart. The ten claim boundary statements are generated from
-`src/core/never-claimed.js` for the same reason.
+`src/core/never-claimed.js` for the same reason, and the footer disclaimer from
+`src/core/constants.js`.
 
 ## Measured, not asserted
 
@@ -213,6 +215,11 @@ is missing and why, and no partial rollup is ever shown as a total.
 Not affiliated with, endorsed by, or sponsored by the United States government, the Department of
 the Treasury, the Department of Defense, USAspending.gov, or any company named on the page. All
 data comes from public government APIs. All company names are used descriptively.
+
+## Not advice
+
+This tool reports government records and arithmetic over them. It is not investment, legal or
+procurement advice.
 
 ## Third-party notices
 

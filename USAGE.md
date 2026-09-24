@@ -198,6 +198,8 @@ error state.
 - **No estimates, at all.** If a figure cannot be reported or computed from reported figures, the
   panel says what is missing and why, and the figure is absent. The estimate budget is zero and a
   build gate enforces it.
+- **Not advice.** This tool reports government records and arithmetic over them. It is not
+  investment, legal or procurement advice.
 
 ## Troubleshooting
 

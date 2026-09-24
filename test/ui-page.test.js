@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 
 import { THEMES, contrastRatio, AA_NORMAL, AA_NON_TEXT, UNIT_RAMPS } from '../src/core/tokens.js';
 import { NEVER_CLAIMED_ITEMS } from '../src/core/never-claimed.js';
-import { API_ORIGIN } from '../src/core/constants.js';
+import { API_ORIGIN, ADVICE_DISCLAIMER } from '../src/core/constants.js';
 import { REGION_IDS } from './helpers/ui-fixtures.js';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -85,6 +85,23 @@ test('the statement of independence and the privacy section ship with the page',
   assert.match(html, /Not affiliated with, endorsed by, or sponsored by/);
   assert.match(html, /No account, no signup, no key, no analytics, no cookies/);
   assert.match(html, /USAspending\.gov, United States Department of the Treasury/);
+});
+
+test('THE ADVICE DISCLAIMER IS ONE SENTENCE IN ONE PLACE: generated into the page footer, and '
+  + 'carried word for word by the README and USAGE', () => {
+  const flat = (s) => s.replace(/\s+/g, ' ');
+  const sentence = flat(ADVICE_DISCLAIMER);
+  assert.match(sentence, /not investment, legal or procurement advice/);
+  const footer = /<footer>([\s\S]*?)<\/footer>/.exec(html);
+  assert.ok(footer, 'the page has no footer');
+  assert.ok(flat(footer[1]).includes(sentence), 'the footer does not carry the disclaimer');
+  assert.ok(footer[1].includes('BUILD:DISCLAIMER'), 'the footer disclaimer is not the generated block');
+  assert.ok(footer[1].indexOf(sentence) < footer[1].indexOf('MIT licence'),
+    'the disclaimer should lead the footer, above the licence line');
+  for (const rel of ['README.md', 'USAGE.md']) {
+    const text = readFileSync(path.join(REPO, rel), 'utf8');
+    assert.ok(flat(text).includes(sentence), rel + ' does not carry the disclaimer word for word');
+  }
 });
 
 test('the page carries no em dash and no en dash', () => {

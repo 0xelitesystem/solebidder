@@ -73,5 +73,14 @@ export const COLD_SOURCE_NOTICE_MS = 3000;
 export const COLD_SOURCE_NOTICE = 'Still loading from USAspending. The source is cold for this '
   + 'query and cold queries have been measured at tens of seconds.';
 
+/**
+ * The advice disclaimer, in ONE copy. The build writes it into the page footer from here, the
+ * command line prints it from here, and a test holds the README and USAGE to these exact words.
+ * Readers include credit and equity analysts, and a figure lifted out of this tool into a note is
+ * still a government record and some arithmetic over it, never a recommendation.
+ */
+export const ADVICE_DISCLAIMER = 'This tool reports government records and arithmetic over them. '
+  + 'It is not investment, legal or procurement advice.';
+
 /** Compare is capped at three series. DESIGN C8 and 6.8: colour separation will not carry a fourth. */
 export const MAX_COMPARE_SERIES = 3;

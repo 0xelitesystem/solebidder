@@ -17,6 +17,11 @@
 // from the registry the moment somebody tidies the page. Generating it means the statement a
 // reader sees and the statement the gate checks are the same string by construction.
 //
+// THE THIRD GENERATED BLOCK IS THE ADVICE DISCLAIMER in the footer, written from
+// ADVICE_DISCLAIMER in src/core/constants.js. The command line prints the same constant, so the
+// page and the terminal can never carry two versions of the one sentence that says what this
+// tool is not.
+//
 // Nothing else is generated. There is no bundler, no minifier and no dependency: the page is one
 // file, the modules are plain ES modules the browser loads directly, and the payload budget is
 // met by writing less rather than by compressing more.
@@ -26,6 +31,7 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { THEMES, themeToCssVars, rampsToCssVars } from '../src/core/tokens.js';
 import { NEVER_CLAIMED_ITEMS } from '../src/core/never-claimed.js';
+import { ADVICE_DISCLAIMER } from '../src/core/constants.js';
 import { REPO, say, isMain } from './_shipped.mjs';
 
 const PAGE = path.join(REPO, 'index.html');
@@ -33,6 +39,8 @@ const OPEN = '/* BUILD:TOKENS */';
 const CLOSE = '/* /BUILD:TOKENS */';
 const NC_OPEN = '<!-- BUILD:NEVER-CLAIMED -->';
 const NC_CLOSE = '<!-- /BUILD:NEVER-CLAIMED -->';
+const AD_OPEN = '<!-- BUILD:DISCLAIMER -->';
+const AD_CLOSE = '<!-- /BUILD:DISCLAIMER -->';
 
 /**
  * The generated block.
@@ -135,6 +143,31 @@ export function injectNeverClaimed(html) {
     + html.slice(end);
 }
 
+/**
+ * The advice disclaimer as the first paragraph of the footer.
+ * @returns {string}
+ */
+export function generateDisclaimerHtml() {
+  return '    <p>' + escapeHtml(ADVICE_DISCLAIMER) + '</p>';
+}
+
+/**
+ * @param {string} html
+ * @returns {string}
+ */
+export function injectDisclaimer(html) {
+  const start = html.indexOf(AD_OPEN);
+  const end = html.indexOf(AD_CLOSE);
+  if (start === -1 || end === -1 || end < start) {
+    throw new Error('build: index.html is missing the disclaimer markers ' + AD_OPEN + ' and '
+      + AD_CLOSE + '. The advice disclaimer is generated from src/core/constants.js so that the '
+      + 'page and the command line print the same sentence.');
+  }
+  return html.slice(0, start + AD_OPEN.length)
+    + '\n' + generateDisclaimerHtml() + '\n    '
+    + html.slice(end);
+}
+
 /** @param {string} s @returns {string} */
 function sha256(s) {
   return createHash('sha256').update(s, 'utf8').digest('hex');
@@ -143,7 +176,7 @@ function sha256(s) {
 async function main() {
   const check = process.argv.includes('--check');
   const current = await readFile(PAGE, 'utf8');
-  const next = injectNeverClaimed(injectTokens(current));
+  const next = injectDisclaimer(injectNeverClaimed(injectTokens(current)));
 
   if (check) {
     const a = sha256(current);
@@ -152,7 +185,8 @@ async function main() {
       say.pass('build:check  index.html matches the generated palette  sha256 ' + a.slice(0, 16));
       return 0;
     }
-    say.fail('build:check  index.html does NOT match the palette generated from src/core/tokens.js');
+    say.fail('build:check  index.html does NOT match what the build generates from '
+      + 'src/core/tokens.js, src/core/never-claimed.js and src/core/constants.js');
     console.log('          committed  sha256 ' + a);
     console.log('          generated  sha256 ' + b);
     console.log('          Run npm run build and commit the result. The gate computes its '

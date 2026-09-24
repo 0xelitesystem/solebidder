@@ -483,6 +483,7 @@ section.reference-region { grid-column: 1 / -1; padding-top: 2.4rem; }
 
 footer { grid-column: 1 / -1; border-top: 1px solid var(--line-rule); margin-top: 2.5rem; padding-top: 1rem; color: var(--text-ink-soft); font-size: 0.82rem; }
 footer p { margin: 0; }
+footer p + p { margin-top: 0.5rem; }
 
 .reference-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem 2.5rem; }
 .reference-grid section { padding: 0; min-width: 0; }
@@ -765,6 +766,9 @@ footer p { margin: 0; }
 </main>
 
   <footer>
+    <!-- BUILD:DISCLAIMER -->
+    <p>This tool reports government records and arithmetic over them. It is not investment, legal or procurement advice.</p>
+    <!-- /BUILD:DISCLAIMER -->
     <p>Source code under the MIT licence.
     <a href="https://github.com/0xelitesystem/solebidder">Repository</a>.
     <a href="https://elitesystem.ai">elitesystem.ai</a></p>

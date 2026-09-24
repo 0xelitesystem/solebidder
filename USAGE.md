@@ -33,8 +33,10 @@ free tool for this question. This is that.
 
 ## Quickstart
 
-1. Open the page. Nothing loads over the network until you ask for something, apart from the date
-   the source publishes about itself.
+1. Open the page. It asks USAspending for two things before you type anything: the date the
+   source publishes about itself, and the one worked example at the top of the page. The bundled
+   name index comes from the page's own host. Nothing else is fetched until you type in the
+   search box.
 2. Type a contractor name, or click one of the starting chips.
 3. **Pick the entity.** This step is not a formality and it is not skippable. Sixteen parent level
    records match one well known defence prime name, with different identifiers and different
@@ -62,10 +64,11 @@ buyer. The annual report says "the United States government" and stops there.
 the top. Start with the buying agency panel, then the sub agency panel under it.
 
 **WHAT YOU LEARN.** The share of the fiscal year total that came from one department, the name of
-that department, and the same figure one level down. For one large prime in FY2025 that reads 98.8
-percent from one department and 57.0 percent from one sub agency inside it. Under the share the
-page prints both halves of the division and how many rows were in the denominator, so you can
-redo it yourself.
+that department, and the same figure one level down. For one large prime in FY2025, on the
+contracts award type set, that reads 98.8 percent from one department; `npm test` recomputes that
+figure in `test/concentration.test.js` from the response recorded in
+`test/fixtures/api/category-awarding-agency-fy2025.json`. Under the share the page prints both
+halves of the division and how many rows were in the denominator, so you can redo it yourself.
 
 **THE ACTION.** You now have a concentration number with a source behind it. Use it as the
 counterweight to a diversification story in a management deck, and quote the numerator, the
@@ -97,10 +100,11 @@ active in that year, not the company's federal money.
 **WHAT YOU DO.** Read the fiscal year spine, ten columns, one call. Then flip the award type set
 control and watch what moves.
 
-**WHAT YOU LEARN.** Obligations by fiscal year on one consistent definition, with the year over
-year change published as both years in full plus the signed difference in dollars. Where a rise is
-too large to render honestly as a percentage, the page says so and gives you the dollars rather
-than a number it cannot stand behind.
+**WHAT YOU LEARN.** Obligations by fiscal year on one consistent definition, each year in full. The
+page draws the columns and leaves the change between them to you. The command line report and its
+JSON output print the year over year change as both years in full plus the signed difference in
+dollars, and where a rise is too large to render honestly as a percentage they say so and give you
+the dollars rather than a number they cannot stand behind.
 
 **THE ACTION.** Compare the shape of that series against the guide. A divergence is a question for
 the next call. Remember what the unit is before you use it: these are obligations, not revenue,
@@ -131,8 +135,8 @@ are two answers to two different questions.
 **WHAT YOU DO.** Read the product service code panel and the industry classification panel.
 
 **WHAT YOU LEARN.** The government's own classification of the goods and services behind the
-money, ranked, with the top one as a share of the whole. For one large prime in FY2025 that reads
-49.1 percent under one product service code and 60.8 percent under one industry classification.
+money, ranked, with the top one as a share of the whole and both halves of the division printed
+beneath it.
 
 **THE ACTION.** Line that mix up against the segment reporting in the annual report. Where the
 classification mix and the reported segments disagree in direction, you have found a question

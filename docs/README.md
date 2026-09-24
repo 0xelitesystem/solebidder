@@ -9,20 +9,29 @@ Nothing in this directory is served as an entry point.
     src/core/           claims, units, the claim boundary statements, the palette, constants
     src/query/          the one API client, the request builders, the response validators
     src/contracts/      the three shapes the render layer is built against
-    scripts/            the build and the four gates. Never served.
+    src/api/            the facade over the client, and the hero and second definition
+                        assembly, which touches no document
+    src/identity/       name to parent record resolution, and the refusal
+    src/analysis/       the shares, the concentration measures, the rollup arithmetic
+    src/ui/             the page: the controller, the panels, the charts
+    src/data/           the bundled name index, names and identifiers only
+    scripts/            the build, the five gates and the browser measurements. Never loaded
+                        by the page and never packed for npm; GitHub Pages serves the
+                        repository root, so these files can still be fetched at their paths.
     test/               node --test, no dependencies
     docs/               this
 
 ## Commands
 
     npm test               the whole suite on the Node test runner
-    npm run gates          all four gates, positive controls first
+    npm run gates          all five gates, positive controls first
     npm run gates:selftest only the positive controls
-    npm run build          regenerate the palette and the claim boundary block in index.html
+    npm run build          regenerate the palette, the claim boundary block and the footer
+                           disclaimer in index.html
     npm run build:check    regenerate to memory and compare by sha256
     npm run verify         tests, gates and the build check together
 
-## The four gates, and what each refuses
+## The five gates, and what each refuses
 
 **gate-badges.** A digit in a rendered text node with no `data-claim-badge` on it or on an
 ancestor. A number written straight into the DOM at runtime. Any use of the innerHTML family. And
@@ -43,8 +52,16 @@ formula rather than read off a render. Every chart fill at 3.0:1 against its own
 money ramps separated from each other, and carrying different patterns and different forced
 colours system colours, so the distinction survives greyscale and high contrast mode.
 
+**gate-fcp.** A first contentful paint of the shipped page over the 1.2 s budget, measured cold
+over the Fast 3G constants in headless Microsoft Edge. Its positive control is the same page
+carrying 400000 B of incompressible padding, which must fail. It fails rather than skips when no
+Edge is found.
+
 Every gate runs its positive controls on every invocation. A gate nobody has watched fail is not
-a gate.
+a gate. The four gates that read files also run a coverage control: each plants a violation of
+its own rule in a throwaway tree, under src/cli/ and, for the gates that read prose, in USAGE.md,
+runs its real scan over that tree, and fails unless the scan catches it, so a scan set that
+stopped reaching a directory cannot pass quietly.
 
 ## Adding a figure
 

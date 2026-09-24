@@ -1,10 +1,16 @@
 # Fixtures
 
-Every file in this directory is **hand built**. Not one of them is a recorded API response, and
-none of them names a real company, a real award or a real agency.
+There are two kinds of fixture here, and the difference between them is part of the evidence,
+because a fixture is evidence and evidence has a provenance too.
 
-That is a deliberate distinction and it is worth stating plainly, because a fixture is evidence
-and evidence has a provenance too.
+- The `*.hand.json` files in this directory are **hand built**. Not one of them is a recorded API
+  response, and none of them names a real company, a real award or a real agency.
+- `api/` holds **recorded** responses: ten bodies the live USAspending API returned on 2026-09-22,
+  with the legacy vendor identifier stripped and nothing else changed. They name real entities,
+  because they are what the government host sent back.
+
+The naming enforces the split: `hand()` in `test/_analysis-helpers.js` reads only `*.hand.json`,
+and `recorded()` there and `fixture()` in `test/helpers/fake-client.js` read only `api/`.
 
 ## What a hand built fixture is for
 
@@ -25,10 +31,15 @@ recorded response is the one thing that cannot be written by hand: a file assemb
 like a capture is a fabricated provenance, which is precisely the failure this product exists
 to make impossible.
 
-So no file here claims to be one. When a capture is taken it belongs in `test/fixtures/recorded/`
-with the date and the request that produced it, and the recomputation tests point at it. Until
-then the README quotes no specific dollar figure, which is the rule the repository already
-follows.
+So no hand built file claims to be one, and the captures that do exist live in `api/`. The
+figures the repository publishes are recomputed from them: `concentration.test.js` recomputes
+the 98.8 percent single department share quoted in USAGE.md from
+`api/category-awarding-agency-fy2025.json`, and the parent total, the registered children and
+the one cent residual are recomputed from the profile and children captures.
+
+No award search, award detail, sub agency, product service code or industry classification
+response has been recorded. The hero share and the top shares in those panels therefore cannot
+be recomputed from this repository, and neither the README nor USAGE.md quotes one.
 
 ## The awkward cases are fixtures too
 

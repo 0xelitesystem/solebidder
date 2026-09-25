@@ -257,14 +257,16 @@ test('--out: exclusive create, refuses an existing file and a link, --force repl
       const viaLinkForced = await writeOutFile(link, 'x', { packageRoot: pkg, force: true });
       assert.equal(/** @type {any} */ (viaLinkForced).reason, 'link');
       assert.equal(await readFile(victim, 'utf8'), 'keep', 'nothing was written through the link');
+    }
 
-      const dirLink = path.join(dir, 'pkglink');
-      let dirLinked = true;
-      try { await symlink(pkg, dirLink, 'junction'); } catch { dirLinked = false; }
-      if (dirLinked) {
-        const through = await writeOutFile(path.join(dirLink, 'x.txt'), 'x', { packageRoot: pkg });
-        assert.equal(/** @type {any} */ (through).reason, 'inside-package', 'a directory link into the package is followed and refused');
-      }
+    // A directory link. A junction needs no privilege on Windows, so this half runs there too.
+    const dirLink = path.join(dir, 'pkglink');
+    let dirLinked = true;
+    try { await symlink(pkg, dirLink, process.platform === 'win32' ? 'junction' : 'dir'); } catch { dirLinked = false; }
+    assert.ok(dirLinked || process.platform !== 'win32', 'a junction can always be made on Windows');
+    if (dirLinked) {
+      const through = await writeOutFile(path.join(dirLink, 'x.txt'), 'x', { packageRoot: pkg });
+      assert.equal(/** @type {any} */ (through).reason, 'inside-package', 'a directory link into the package is followed and refused');
     }
   } finally {
     await rm(dir, { recursive: true, force: true });

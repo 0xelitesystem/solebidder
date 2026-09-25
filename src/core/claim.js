@@ -194,7 +194,7 @@ export const METHODS = Object.freeze({
     + 'Classification System code carried on the award record.',
   HERFINDAHL_INDEX:
     'Sum of the squares of each agency share, shares taken as decimals, over every agency row '
-    + 'returned. The formula is printed in the tooltip.',
+    + 'returned. The formula is printed beside the figure.',
   CHILD_ROLLUP_CHECK:
     'Sum of the amounts of every registered child entity for the same explicit fiscal year, '
     + 'compared against the parent total_transaction_amount for that year. The delta is shown '

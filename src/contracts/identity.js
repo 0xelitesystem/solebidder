@@ -69,7 +69,7 @@ import { AWARD_TYPE_SETS } from '../core/constants.js';
  *
  * @typedef {Object} IdentityChoice
  * @property {IdentityCandidate} candidate
- * @property {'picked-from-list'|'picked-a-chip'|'only-candidate'} how
+ * @property {'picked-from-list'|'picked-a-chip'|'picked-by-flag'|'only-candidate'} how
  */
 
 /**
@@ -101,7 +101,7 @@ import { AWARD_TYPE_SETS } from '../core/constants.js';
  * @property {import('../core/constants.js').AwardTypeSetId} awardTypeSetId
  * @property {string|null} sourceAsOf The date the source published about itself, or null. We
  *   never assert a date we did not just receive.
- * @property {'picked-from-list'|'picked-a-chip'|'only-candidate'} chosenHow
+ * @property {'picked-from-list'|'picked-a-chip'|'picked-by-flag'|'only-candidate'} chosenHow
  * @property {Set<string>} entityNamesUpper Upper case names of the parent and every child, used
  *   to validate award rows against the resolved set. Trap 1.
  * @property {string} subjectSentence One sentence naming what was summed, for the page header.
@@ -166,7 +166,8 @@ export function resolveIdentity(args) {
   }
   const candidate = assertIdentityCandidate(choice.candidate, 'resolveIdentity');
   const how = choice.how;
-  if (how !== 'picked-from-list' && how !== 'picked-a-chip' && how !== 'only-candidate') {
+  if (how !== 'picked-from-list' && how !== 'picked-a-chip' && how !== 'picked-by-flag'
+    && how !== 'only-candidate') {
     throw new TypeError('resolveIdentity: choice.how must say how the entity was chosen, so the '
       + 'page can say so too.');
   }

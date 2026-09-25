@@ -37,6 +37,7 @@ import {
 } from '../api/second-definition.js';
 import { staleLinkageDisclosures } from '../identity/stale-tree.js';
 import { topRowShare, herfindahlIndex, obligationsByYear } from '../analysis/index.js';
+import { CATEGORY_PANELS, SPINE_YEARS } from '../api/dimensions.js';
 import { categoryRowClaims } from '../api/categories.js';
 import { parseIndex } from '../api/typeahead-index.js';
 import { createTypeahead } from '../api/typeahead.js';
@@ -55,70 +56,17 @@ import {
 } from './panels.js';
 import { el, prose, clear, onActivate } from './dom.js';
 
-/** How many fiscal years the spine chart shows. DESIGN 6.9 chart one. */
-export const SPINE_YEARS = 10;
-
 /** How long to wait after a keystroke before asking for suggestions. */
 export const SUGGEST_DEBOUNCE_MS = 180;
 
 /** Where the bundled name index is served from. Same origin, so it needs no host allowance. */
 export const INDEX_URL = './src/data/typeahead-index.json';
 
-/**
- * The four category dimensions, each with the region it mounts into, the noun the sentence uses
- * and the METHOD its top share is badged with.
- *
- * EVERY DIMENSION HAS ITS OWN METHOD, and that is the point of the table rather than a loop over
- * bare strings. The method is what the badge prints, so a single shared method would have every
- * panel claiming its share was computed over awarding agencies while three of them were not.
- * They run in this order because the agency panel is the one DESIGN C2 calls the headline and
- * the slowest endpoints should not delay it.
- */
-export const CATEGORY_PANELS = Object.freeze([
-  Object.freeze({
-    dimension: 'awarding_agency',
-    region: 'mix',
-    noun: 'department',
-    rowNoun: 'awarding agency',
-    chartNoun: 'buying agency',
-    method: METHODS.ONE_CUSTOMER_SHARE,
-    herfindahl: true,
-  }),
-  Object.freeze({
-    dimension: 'awarding_subagency',
-    region: 'mixSubagency',
-    noun: 'sub agency',
-    rowNoun: 'awarding sub agency',
-    chartNoun: 'buying sub agency',
-    method: METHODS.SUBAGENCY_SHARE,
-    herfindahl: false,
-  }),
-  Object.freeze({
-    dimension: 'psc',
-    region: 'mixPsc',
-    noun: 'product service code',
-    rowNoun: 'product service code',
-    chartNoun: 'product service code',
-    method: METHODS.PRODUCT_SERVICE_SHARE,
-    herfindahl: false,
-    tailText: ' of the dollars obligated to this entity in the fiscal year selected was recorded '
-      + 'against one product service code, which is the government classification of what was '
-      + 'bought rather than of who bought it.',
-    topLabel: 'That one product service code is ',
-  }),
-  Object.freeze({
-    dimension: 'naics',
-    region: 'mixNaics',
-    noun: 'industry classification',
-    rowNoun: 'industry classification',
-    chartNoun: 'industry classification',
-    method: METHODS.INDUSTRY_SHARE,
-    herfindahl: false,
-    tailText: ' of the dollars obligated to this entity in the fiscal year selected was recorded '
-      + 'against one industry classification.',
-    topLabel: 'That one industry classification is ',
-  }),
-]);
+// The four category dimensions, each with the region it mounts into, the noun and the sentence
+// its panel uses and the METHOD its top share is badged with, and the length of the fiscal year
+// spine, live in src/api/dimensions.js so the command line asks the same questions without
+// importing this render layer. Re-exported here for the page's existing importers.
+export { CATEGORY_PANELS, SPINE_YEARS } from '../api/dimensions.js';
 
 /**
  * Starting points for the search box. NAMES ONLY, and that is deliberate: a bundled identifier

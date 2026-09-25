@@ -147,21 +147,23 @@ export function decideIdentity(queryText, candidates) {
 
 /**
  * The visitor picked one of the split records. The choice carries HOW it was made, so the page
- * can say "you chose this" rather than implying the tool knew.
+ * can say "you chose this" rather than implying the tool knew. 'picked-by-flag' is the command
+ * line's own act: the reader named the identifier with an option, which is a choice made before
+ * any list was shown, and it is recorded as that rather than borrowed from the page's wording.
  *
  * @param {import('../contracts/identity.js').IdentityCandidate[]} candidates
  * @param {string} uei
- * @param {'picked-from-list'|'picked-a-chip'} [how]
+ * @param {'picked-from-list'|'picked-a-chip'|'picked-by-flag'} [how]
  * @returns {import('../contracts/identity.js').IdentityChoice}
  */
 export function pickCandidate(candidates, uei, how = 'picked-from-list') {
   if (!Array.isArray(candidates) || candidates.length === 0) {
     throw new TypeError('pickCandidate: there are no candidates to pick from.');
   }
-  if (how !== 'picked-from-list' && how !== 'picked-a-chip') {
-    throw new TypeError('pickCandidate: how must say whether the visitor picked from the list or '
-      + 'clicked a chip. The page states which, because the subject of every figure on it was '
-      + 'chosen rather than deduced.');
+  if (how !== 'picked-from-list' && how !== 'picked-a-chip' && how !== 'picked-by-flag') {
+    throw new TypeError('pickCandidate: how must say whether the visitor picked from the list, '
+      + 'clicked a chip or named the identifier with an option. The output states which, because '
+      + 'the subject of every figure in it was chosen rather than deduced.');
   }
   const found = candidates.find((c) => c.uei === uei);
   if (found === undefined) {

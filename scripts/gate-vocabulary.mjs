@@ -25,6 +25,13 @@
 // scripts/ is not scanned at all, because the registry of banned terms lives there and a
 // registry that cannot name what it bans is not a registry. Nothing under scripts/ is loaded by
 // the page or packed for npm, though GitHub Pages serves it at its path.
+//
+// THE COMMAND LINE'S SENTENCES ARE ALSO SCANNED AS A READER RECEIVES THEM. A source scan reads
+// string literals one at a time, and the command line builds sentences at run time: a label
+// joined to a noun, a template filled with a fiscal year, the help text assembled from the
+// constants it describes. A banned phrase split across two literals passes a source scan and
+// still reaches a terminal whole. So src/cli/copy.js exports cliStringTables(), every table it
+// prints from with every builder called, and this gate imports it and scans each string.
 
 import { NEVER_CLAIMED_ITEMS, NEVER_CLAIMED_COUNT } from '../src/core/never-claimed.js';
 import { BANNED, scanText, maskPermitted } from './banned-vocabulary.mjs';
@@ -166,6 +173,48 @@ export async function checkAbsence(root = REPO) {
 }
 
 /**
+ * Scan strings as a reader receives them. Returns the failure count.
+ * @param {readonly string[]} strings
+ * @param {string} rel Where they came from, for the message.
+ * @returns {number}
+ */
+export function checkStrings(strings, rel) {
+  let bad = 0;
+  strings.forEach((s, i) => {
+    for (const h of scanText(String(s), rel + '[' + i + ']', 'shipped')) {
+      say.fail(rel + '[' + i + ']  [' + h.ruleId + '] ' + JSON.stringify(h.match));
+      console.log('          ' + h.why);
+      bad += 1;
+    }
+  });
+  return bad;
+}
+
+/** The runtime tables, and the control that proves a split phrase is caught whole. */
+export async function checkCliStringTables() {
+  say.head('gate-vocabulary: the command line sentences as a reader receives them');
+  const { cliStringTables } = await import('../src/cli/copy.js');
+  const tables = cliStringTables({ version: '0.0.0' });
+  let bad = 0;
+  if (!Array.isArray(tables) || tables.length < 50) {
+    say.fail('cliStringTables() returned ' + (Array.isArray(tables) ? tables.length : 'no')
+      + ' strings. It must return every table the command line prints from.');
+    bad += 1;
+  }
+  // Positive control: a banned phrase that no single literal carries, assembled the way a
+  // builder would assemble it, must be caught once joined.
+  const split = ['See everything the ' + 'company gets.'];
+  const silenced = console.log;
+  console.log = () => {};
+  const caught = (() => { try { return checkStrings(split, 'control'); } finally { console.log = silenced; } })();
+  if (caught > 0) say.pass('control caught: a banned phrase assembled from two literals');
+  else { say.fail('control NOT caught: a banned phrase assembled from two literals'); bad += 1; }
+  const found = checkStrings(tables, 'src/cli/copy.js cliStringTables()');
+  if (found === 0) say.pass(tables.length + ' command line strings checked against ' + BANNED.length + ' rules, none matched');
+  return bad + found;
+}
+
+/**
  * COVERAGE. The command line will live under src/cli/ and its long form documentation in
  * USAGE.md. A banned phrase planted in either must fail this gate's real scan, and so must one
  * in the README and under docs/, while a comment that merely names a banned term, which the scan
@@ -207,6 +256,7 @@ if (isMain(import.meta.url)) {
   if (!selftestOnly) {
     failures += await checkPresence();
     failures += await checkAbsence();
+    failures += await checkCliStringTables();
   }
   console.log(failures === 0 ? '\ngate-vocabulary: PASS' : '\ngate-vocabulary: FAIL (' + failures + ')');
   process.exit(failures === 0 ? 0 : 1);

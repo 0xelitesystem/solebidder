@@ -25,6 +25,13 @@
 //      maxEstimated, committed at 0, and raising it is a reviewed diff rather than a decision
 //      somebody makes alone at the end of a build.
 //
+//   D. THE TERMINAL CHECK. The command line has no DOM for checks A and B to read, so a figure
+//      could reach a terminal by a route neither of them sees. It has exactly one door instead:
+//      src/cli/out.js is the only module under src/cli that may touch the console or the process
+//      output streams, and it sanitises and lays out every line it is given. Any other module
+//      under src/cli that calls console, or reaches process.stdout or process.stderr by any
+//      spelling, fails here, because a second door is a door the sanitiser does not stand in.
+//
 // THE POSITIVE CONTROLS ARE NOT OPTIONAL. They run on every invocation. A gate nobody has
 // watched fail is not a gate, it is a hope.
 
@@ -240,6 +247,43 @@ export function scanJsForEstimates(js, file) {
   return hits;
 }
 
+/** The one module under src/cli allowed to write to a terminal. */
+export const OUTPUT_SINK = 'src/cli/out.js';
+
+/** Every spelling of a terminal write this check refuses outside the sink. */
+const TERMINAL_WRITES = Object.freeze([
+  /\bconsole\s*(?:\.|\[)/,
+  /\bprocess\s*\.\s*(?:stdout|stderr)\b/,
+  /\bprocess\s*\[\s*['"`](?:stdout|stderr)['"`]\s*\]/,
+  /\{[^}]*\b(?:stdout|stderr)\b[^}]*\}\s*=\s*process\b/,
+]);
+
+/**
+ * Check D. Find terminal writes in a module that is not the output sink.
+ * @param {string} js
+ * @param {string} file
+ * @returns {BadgeHit[]}
+ */
+export function scanJsForTerminalWrites(js, file) {
+  /** @type {BadgeHit[]} */
+  const hits = [];
+  js.split('\n').forEach((text, idx) => {
+    const code = text.replace(/\/\/.*$/, '');
+    if (/^\s*\*/.test(text) || /^\s*\/\*/.test(text)) return;
+    if (TERMINAL_WRITES.some((re) => re.test(code))) {
+      hits.push({
+        file,
+        line: idx + 1,
+        detail: code.trim().slice(0, 90),
+        why: 'Only ' + OUTPUT_SINK + ' may write to a terminal. It removes control sequences and '
+          + 'invisible characters from every line and lays each figure out whole, with its unit '
+          + 'and its badge. Hand the words to the sink instead of writing them here.',
+      });
+    }
+  });
+  return hits;
+}
+
 /* -----------------------------------------------------------------------------------------
  * POSITIVE CONTROLS. Each one is a violation this gate MUST catch, and a legitimate case it
  * must NOT flag. A gate with only the first half is a gate that fails a correct repository.
@@ -284,6 +328,24 @@ const ESTIMATE_MUST_PASS = [
   { name: 'a call to reported()', js: 'const c = reported(v, OBLIGATIONS, METHODS.RECIPIENT_PROFILE_TOTAL, extra);' },
 ];
 
+const TERMINAL_MUST_FAIL = [
+  { name: 'console.log', js: 'console.log(renderClaimText(claim));' },
+  { name: 'console.error', js: '  console.error(message);' },
+  { name: 'console by index', js: 'console["log"](text);' },
+  { name: 'process.stdout.write', js: 'process.stdout.write(line + "\\n");' },
+  { name: 'process.stderr.write', js: 'process.stderr.write(notice);' },
+  { name: 'the stream held in a variable', js: 'const w = process.stdout;' },
+  { name: 'the stream by index', js: "process['stderr'].write(x);" },
+  { name: 'the stream destructured', js: 'const { stdout } = process;' },
+];
+
+const TERMINAL_MUST_PASS = [
+  { name: 'writing through the sink', js: 'out.write(blocks);' },
+  { name: 'a stream handed in by the caller', js: 'const stdout = args.stdout;' },
+  { name: 'a comment naming the rule', js: '// never call console.log here' },
+  { name: 'the exit code', js: 'process.exitCode = await run();' },
+];
+
 export function selftest() {
   say.head('gate-badges positive controls');
   let bad = 0;
@@ -314,6 +376,14 @@ export function selftest() {
   for (const c of ESTIMATE_MUST_PASS) {
     if (scanJsForEstimates(c.js, 'control').length === 0) say.pass('estimate correctly allowed: ' + c.name);
     else { say.fail('estimate FALSE POSITIVE: ' + c.name); bad += 1; }
+  }
+  for (const c of TERMINAL_MUST_FAIL) {
+    if (scanJsForTerminalWrites(c.js, 'control').length > 0) say.pass('terminal write caught: ' + c.name);
+    else { say.fail('terminal write NOT caught, a second door to the terminal would ship: ' + c.name); bad += 1; }
+  }
+  for (const c of TERMINAL_MUST_PASS) {
+    if (scanJsForTerminalWrites(c.js, 'control').length === 0) say.pass('terminal write correctly allowed: ' + c.name);
+    else { say.fail('terminal write FALSE POSITIVE: ' + c.name); bad += 1; }
   }
 
   // The HTML control for an ESTIMATED badge in the page.
@@ -347,6 +417,7 @@ export async function scan(root = REPO) {
   let chromeTotal = 0;
   let badgedTotal = 0;
   let estimatedTotal = 0;
+  let terminalFiles = 0;
 
   if (html.length === 0) {
     say.note('no shipped HTML page yet. The HTML half of this gate is proven by its positive '
@@ -383,7 +454,16 @@ export async function scan(root = REPO) {
         estimatedTotal += 1;
       }
     }
+    if (f.rel.startsWith('src/cli/') && f.rel !== OUTPUT_SINK) {
+      terminalFiles += 1;
+      for (const h of scanJsForTerminalWrites(f.text, f.rel)) {
+        say.fail(h.file + ':' + h.line + '  ' + h.detail);
+        console.log('          ' + h.why);
+        bad += 1;
+      }
+    }
   }
+  if (terminalFiles > 0) say.pass(terminalFiles + ' command line modules checked: only ' + OUTPUT_SINK + ' writes to a terminal');
 
   if (estimatedTotal > budget.maxEstimated) {
     say.fail('ESTIMATED claims: ' + estimatedTotal + ' found, budget is ' + budget.maxEstimated
@@ -412,14 +492,18 @@ export async function scan(root = REPO) {
  */
 export async function coverageControl() {
   const planted = 'export const KINDS = [' + ESTIMATED + ', 1];\n';
+  const leak = 'export function show(t) {\n  process.stdout.write(t);\n}\n';
   return coverageCases('gate-badges', scan, [
     { name: 'an estimate token in a module under src/cli/', files: { 'src/cli/legend.js': planted } },
     { name: 'an estimate token in a .mjs module under src/cli/', files: { 'src/cli/legend.mjs': planted } },
+    { name: 'a terminal write in a module under src/cli/ that is not the sink', files: { 'src/cli/report.js': leak } },
+    { name: 'a console call in a .mjs module under src/cli/', files: { 'src/cli/help.mjs': 'console.log(1);\n' } },
   ], [
     {
       name: 'a legend built from the badge registry at runtime',
       files: { 'src/cli/legend.js': 'export const legend = (spec) => Object.values(spec).map((s) => s.label);\n' },
     },
+    { name: 'the output sink writing to the terminal', files: { [OUTPUT_SINK]: leak } },
   ]);
 }
 

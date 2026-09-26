@@ -28,6 +28,8 @@ import {
 } from '../src/core/constants.js';
 import { SPINE_YEARS } from '../src/api/dimensions.js';
 import { NEVER_CLAIMED_COUNT } from '../src/core/never-claimed.js';
+import { fiscalYearOf } from '../src/query/fiscal-year.js';
+import { DEFAULT_POLICY } from '../src/query/retry.js';
 
 const read = (file) => readFileSync(path.join(REPO, file), 'utf8');
 const pkg = JSON.parse(read('package.json'));
@@ -57,10 +59,12 @@ function section(text, heading) {
 }
 
 /** Spelled numbers the prose uses, so a figure written as a word is still checked. */
-const WORDS = Object.freeze({ 10: 'ten', 80: 'eighty' });
+const WORDS = Object.freeze({ 3: 'three', 4: 'four', 10: 'ten', 80: 'eighty' });
 
 const README = read('README.md');
 const CLI = section(README, '## Command line');
+const USAGE_MD = read('USAGE.md');
+const USAGE_CLI = section(USAGE_MD, '## Command line');
 
 test('the README request plan is the one requestPlan() computes from the constants', () => {
   const plan = requestPlan();
@@ -206,15 +210,54 @@ function commandsIn(text) {
       while (words.length > 0 && /^[A-Z_]+=/.test(words[0])) words.shift();
       const at = words[0] === 'npx' ? 1 : 0;
       if (words[at] !== 'solebidder') continue;
-      out.push(words.slice(at + 1));
+      // A placeholder stands for a value of its kind; the name placeholders are already words.
+      out.push(words.slice(at + 1).map((w) => (w === '<UEI>' ? PARENT_UEI : w)));
     }
   }
   return out;
 }
 
+test('the USAGE command line chapter states the limits the code sets', () => {
+  const s = flat(USAGE_CLI);
+  const plan = requestPlan();
+  const must = [
+    'One report makes at most ' + plan.report + ' requests',
+    'after ' + WORDS[COLD_SOURCE_NOTICE_MS / 1000] + ' seconds one line on standard error says the source is cold',
+    'prints the ' + WORDS[NEVER_CLAIMED_COUNT] + ' statements of what this tool never claims',
+    'It needs Node ' + pkg.engines.node.replace('>=', '') + ' or later',
+    'exits with code ' + EXIT.CHOICE_REQUIRED,
+    'starts on the first of October, counted in UTC',
+  ];
+  for (const m of must) assert.ok(s.includes(m), 'the USAGE command line chapter does not say: ' + m);
+  assert.equal(fiscalYearOf(new Date(Date.UTC(2026, 9, 1, 0, 0, 0))), 2027);
+  assert.equal(fiscalYearOf(new Date(Date.UTC(2026, 8, 30, 23, 59, 59))), 2026);
+  // The page's own troubleshooting names the retry ceiling too.
+  assert.ok(flat(USAGE_MD).includes('tried the request ' + WORDS[DEFAULT_POLICY.maxAttempts] + ' times in all'));
+  for (const column of ['Section', 'Figure id', 'Fiscal year', 'Why there is no figure',
+    'Dollars obligated in the fiscal year', 'Lifetime award value in dollars, exercised options included',
+    'Share of the stated denominator, as a decimal fraction', 'Count of records']) {
+    assert.ok(CSV_HEADER.includes(column), 'not a column: ' + column);
+    assert.ok(s.includes(column), 'the chapter does not name the column: ' + column);
+  }
+});
+
+test('every figure id and section the USAGE chapter names is one a real report prints', async () => {
+  const r = await runCli(['lockheed', 'martin', '--uei', PARENT_UEI, '--fy', '2025', '--json']);
+  const doc = JSON.parse(r.stdout);
+  const sections = new Map(doc.sections.map((sec) => [sec.id, sec]));
+  const ids = [...USAGE_CLI.matchAll(/`([a-z_]+\.[a-zA-Z]+)`/g)].map((m) => m[1]);
+  assert.ok(ids.length >= 3, 'found too few figure ids to be reading the chapter');
+  for (const id of ids) {
+    const figure = doc.sections.flatMap((sec) => sec.items).find((i) => i.id === id);
+    assert.ok(figure, 'no figure with id ' + id);
+    assert.equal(typeof figure.denominatorText, 'string', id + ' carries no denominator sentence');
+  }
+  for (const m of USAGE_CLI.matchAll(/In the `([a-z]+)` section/g)) assert.ok(sections.has(m[1]), 'no section ' + m[1]);
+});
+
 test('every command shown in the README and USAGE is one the parser accepts', () => {
-  const lines = [...commandsIn(README), ...commandsIn(read('USAGE.md'))];
-  assert.ok(lines.length >= 6, 'found too few example commands to be reading the right blocks');
+  const lines = [...commandsIn(README), ...commandsIn(USAGE_MD)];
+  assert.ok(lines.length >= 12, 'found too few example commands to be reading the right blocks');
   for (const argv of lines) {
     const r = parseArgs(argv, { now: NOW });
     assert.ok(r.ok, 'the parser refuses a documented command: solebidder ' + argv.join(' ') + ' -> ' + (r.ok ? '' : r.message));

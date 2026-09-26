@@ -19,16 +19,19 @@ arithmetic for each one.
 Every number carries a badge naming the endpoint it came from, the arithmetic that produced it,
 the fiscal year, the award type set, and the date the source publishes about itself.
 
+The same report runs in a terminal, with output a script or a spreadsheet can take. The
+[Command line](#command-line) chapter below covers it.
+
 ## Why
 
 USAspending.gov publishes all the underlying rows and it is free, official and complete. What it
-does not do is compute. Its recipient profile shows the top five rows of eight categories and then
+does not do is compute. Its recipient profile shows the first few rows of each category and then
 hands you off to advanced search. It never turns those rows into a share, never names a customer
 dependence, and never states a competition proportion. Those are the three facts an analyst
 actually wants and they are one division away from data that is already public.
 
-The commercial tools that do compute them start in the low thousands of dollars a year and most
-of them want an API key before they will talk to you. There is no free, browser native, signup
+The commercial tools that do compute them are paid subscriptions, and most of them want an API key
+before they will talk to you. There is no free, browser native, signup
 free tool for this question. This is that.
 
 ## Quickstart
@@ -49,9 +52,8 @@ free tool for this question. This is that.
    are the slowest endpoints and are never allowed to hold up the rest.
 
 If a panel is still waiting after three seconds it says out loud that the source is cold. That is
-true: the same query has been measured at twenty six seconds cold and four tenths of a second once
-the upstream cache is warm. There is no spinner anywhere on this page, because a spinner implies
-progress it cannot see.
+true: the same query answers far more slowly on a cold upstream cache than on a warm one. There is
+no spinner anywhere on this page, because a spinner implies progress it cannot see.
 
 ## Six ways to use it
 
@@ -162,11 +164,11 @@ error state.
 
 - **Set the award type set before you quote anything.** Contracts only, contracts plus indefinite
   delivery vehicles, and every award type are three defensible answers to the same question and
-  they differ by hundreds of millions on a large prime. The control is visible, the set is on
-  every badge, and it is never a hidden default.
-- **Warm the query, then work.** The first call against a cold name can take tens of seconds; the
-  same call is under half a second once the upstream cache is warm. Run the search, let it land,
-  then change the year or the set.
+  on a large prime they can differ by a lot. The control is visible, the set is on every badge,
+  and it is never a hidden default.
+- **Warm the query, then work.** The first call against a cold name can be slow; the same call is
+  much faster once the upstream cache is warm. Run the search, let it land, then change the year
+  or the set.
 - **Read the denominator, not the percentage.** Every share on this page prints its numerator and
   its denominator in words directly underneath. A percentage lifted out of that sentence is the
   easiest thing here to misquote.
@@ -178,11 +180,210 @@ error state.
   year, the award type set and the source date. A figure without it is a figure somebody else has
   to take on trust.
 
+## Command line
+
+### What it does
+
+`solebidder` is the same report in a terminal. It runs the modules the page runs, in the same
+order, against the same one government host, and prints every figure with its badge as a word.
+Give it a name and it resolves the name to parent level records exactly as the page does: when one
+record matches, it reports; when more than one does, it refuses, lists each record's name and
+identifier with no amounts, and exits with code 3 until you choose one with `--uei`.
+
+```
+npx solebidder "lockheed martin"
+npx solebidder "lockheed martin" --uei ZFN2JJXBLZT3
+npx solebidder "lockheed martin" --uei ZFN2JJXBLZT3 --fy 2025 --plain
+npx solebidder suggest lockheed
+npx solebidder claims
+```
+
+Two commands never touch the network. `solebidder suggest` looks names up in the index bundled
+with the package, and `solebidder claims` prints the ten statements of what this tool never
+claims, word for word.
+
+The report prints one thing the page does not: each fiscal year in the obligations spine carries
+the change from the year before, in dollars and, where one can be printed honestly, as a share of
+the earlier year. In the terminal, long lists show their largest rows; `--json` and `--csv` carry
+every row of every breakdown and every contract in the competition set.
+
+It prints no count of awards. The count endpoint does not apply the recipient filter: its recorded
+answer, in `test/fixtures/api/award-count-fy2025.json`, says the recipient filter was not used, so
+the count it returns is not about the entity you asked for.
+
+Every option, the exit codes, the request plan, the User-Agent and the privacy line are in the
+[README](README.md#command-line) and in `solebidder --help`.
+
+### Why it is useful
+
+- **It asks the same question every time, and a script can read its refusal.** The entity, the
+  fiscal year and the award type set are options, and each is printed on every figure, so the same
+  command asks the same question next quarter. A name that is not one company in this dataset
+  ends with exit code 3 rather than a number, so a script stops instead of summing the wrong
+  company.
+- **The receipt travels with the figure.** In `--json` every figure carries its badge, method,
+  fiscal year, award type set and source date. In `--csv` so does every figure row, with the unit
+  named in every column header. A figure pasted into a spreadsheet, a note or another program
+  keeps where it came from.
+- **A saved file is a dated record.** `--out` writes the report with the date the source published
+  about its own data on that run, the source line and the disclaimer inside it.
+- **Nothing to sign up for.** No account, no key, no configuration file and zero dependencies. It
+  needs Node 22 or later.
+
+### How to use it well
+
+- **Resolve first, then report.** Run the name on its own. If it exits with code 3, read the list,
+  pick the record you mean, and pass its identifier with `--uei` from then on. The report says you
+  chose it with the option, so whoever reads the output knows a person made that choice.
+  `solebidder suggest` shows names and identifiers from the bundled index without a request, but
+  many of those are child level records, and the report sums a parent and its registered children
+  only.
+- **Pin the fiscal year in anything you keep.** Without `--fy` the report uses the most recently
+  completed fiscal year and says so. That default moves forward when a new federal fiscal year
+  starts on the first of October, counted in UTC. Passing `--fy` makes the command repeatable.
+- **Choose the award type set on purpose.** `contracts` is the default. `contractsAndIdvs` and
+  `all` answer different questions with different totals. The set is printed on every figure, so
+  quote it with the figure.
+- **Read the exit code before the output.** 0 is done. 1 is a named failure: when a section
+  failed or was suppressed, the rest of the report still printed, so find the section that says
+  it is missing before you quote anything. 2 is a typing mistake, 3 is a choice to make, and 130
+  means it was interrupted.
+- **Keep the two streams apart.** The report is on standard output. Progress lines, the cold source
+  line and notices are on standard error. Redirecting standard output to a file gives a clean
+  document; `--out` does the same and refuses to overwrite a file unless you pass `--force`.
+- **A slow first answer is the source, not the tool.** A name the source has not been asked about
+  lately can take a long time; after three seconds one line on standard error says the source is
+  cold. Nothing is printed until every part has answered or failed. The same command run again
+  soon after is usually faster, because the source's own cache is warm by then.
+- **Be polite to a free public service.** One report makes at most 60 requests. Run reports one
+  after another, never many at once, and keep the output rather than asking again: nothing is
+  cached, so every run fetches everything again.
+- **For a screen reader or a log**, `--plain` prints one complete sentence per figure with no
+  indentation. `NO_COLOR` or `--no-color` turns off the only styling there is, bold, and `COLUMNS`
+  sets the wrap width.
+
+### Four ways to use it
+
+#### 1. A credit analyst checking customer concentration
+
+**SITUATION.** A borrower's filings say its customer is the United States government. You need to
+know how concentrated that is inside the government, with a source you can cite in a credit memo.
+
+**WHAT YOU DO.**
+
+```
+npx solebidder "<borrower name>"
+npx solebidder "<borrower name>" --uei <UEI> --fy 2025 --json --out borrower-fy2025.json
+```
+
+**WHAT YOU LEARN.** In the `buyers` section, the share of the year's obligations that came from the
+single largest awarding agency, with the dollars on both sides of the division and how many
+agencies were returned, and the same view one level down by sub agency. The Herfindahl index
+across the agencies puts the whole spread into one figure. In the JSON these are
+`awarding_agency.topShare`, `awarding_agency.herfindahl` and `awarding_subagency.topShare`, each
+with its `denominatorText`.
+
+**THE ACTION.** Quote the share with its numerator, its denominator, the fiscal year, the award type
+set and the source date from the same file. Remember what the unit is: obligations, which are the
+government committing money, not money the borrower booked in that year.
+
+#### 2. A procurement team checking sole source exposure
+
+**SITUATION.** You buy from a supplier, or you are about to, and you want to know how much of its
+federal work was awarded without competition.
+
+**WHAT YOU DO.**
+
+```
+npx solebidder "<supplier name>" --uei <UEI> --fy 2025
+npx solebidder "<supplier name>" --uei <UEI> --fy 2025 --set contractsAndIdvs
+```
+
+**WHAT YOU LEARN.** The share of lifetime award value across the largest contracts active in the
+year that the record marks as awarded with exactly one bidder, with the dollars on both sides, the
+tallies behind it, and the one offer cross check, which counts records instead of dollars. When
+some contracts carry no competition field, the report says the share is a floor. The largest
+contracts are listed with a link to the government's own award record, so you can check each one
+yourself. The second run shows how the answer moves when indefinite delivery vehicles are counted.
+
+**THE ACTION.** Treat the share as a property of the largest contracts in that year, which is what
+its denominator sentence says, and not of every contract the supplier holds. A high share is a
+question to take to the award records, not a finding.
+
+#### 3. A journalist who needs a figure that survives a correction request
+
+**SITUATION.** You are writing about a contractor and you need a figure you can print, attribute,
+and defend when the company's press office calls.
+
+**WHAT YOU DO.**
+
+```
+npx solebidder "<company name>"
+npx solebidder "<company name>" --uei <UEI> --fy 2025 --plain --out company-fy2025.txt
+npx solebidder claims
+```
+
+**WHAT YOU LEARN.** The first run tells you whether the name is one company in this dataset at all.
+`--plain` writes one complete sentence per figure, each with its unit and badge, so a figure
+cannot be lifted without the words that say what it is. The second definition section prints the
+total for everything matching the name beside the parent's own total, with every entity in the
+gap named. `solebidder claims` prints the ten statements that say what these figures are not.
+
+**THE ACTION.** Attribute the figure to USAspending.gov, name the fiscal year, the award type set and
+which definition of the company you used, and keep the file: it holds the date the source
+published about its own data on the day you ran it. Call the figure what it is, obligations.
+
+#### 4. A spreadsheet that tracks a few contractors across years
+
+**SITUATION.** You follow a handful of contractors across fiscal years in a spreadsheet and you want
+the figures to arrive with their units and sources rather than retyped.
+
+**WHAT YOU DO.** Resolve each name once with the name alone, then write one file per company and
+year, one run after another:
+
+```
+npm install --global solebidder
+solebidder "<company name>" --uei <UEI> --fy 2024 --csv --out company-fy2024.csv
+solebidder "<company name>" --uei <UEI> --fy 2025 --csv --out company-fy2025.csv
+```
+
+Installing once means each run starts the installed command rather than resolving the package
+through npx again.
+
+**WHAT YOU LEARN.** One row per figure. The value sits in the column for its unit, which is one of
+`Dollars obligated in the fiscal year`, `Lifetime award value in dollars, exercised options
+included`, `Share of the stated denominator, as a decimal fraction` and `Count of records`, and
+the other three stay empty, so a sum down one column can never mix quantities. Each figure row
+also carries the figure as printed, its badge, method, fiscal year, award type set and source
+date. A text cell a spreadsheet would run as a formula starts with a single quote, and
+deobligations stay negative numbers. A figure that could not be computed leaves its value empty
+and says why in `Why there is no figure`. Rows keep the same `Section`, `Figure id` and entity
+columns from run to run, and the `Fiscal year` column says which year each figure is for, so two
+files line up on those columns.
+
+**THE ACTION.** Keep the source date rows with the figures. Never add obligations and lifetime award
+value together, and never sum shares.
+
+### When something goes wrong
+
+- **Exit code 3 and a list of records.** The name matches more than one parent level record, or
+  the identifier you gave with `--uei` is not one of the records that match that name. Pick one
+  from the list and pass it with `--uei`.
+- **Exit code 1 and a section that says it is missing.** That part failed, or its total was
+  suppressed because some of its parts did not arrive. The sentence under it says which, and
+  whether running again could help.
+- **`--out` refuses the path.** The file exists (pass `--force` to replace it), the path is a link
+  (never written through), or the path is inside the directory the tool is installed in. Running
+  from a clone of the repository, that directory is the clone, so write the file somewhere else.
+- **It refuses to run and names `NODE_TLS_REJECT_UNAUTHORIZED`.** That variable is set to zero,
+  which switches certificate checks off, and a figure received that way cannot be badged as
+  reported. Unset it and run again.
+
 ## Honest limits
 
 - **One host, no fallback.** Every figure comes from one government API. If it is down, this page
   shows named failures per panel and no figures. There is no honest offline mode, because there
-  is no honest bundled figure: the only bulk alternative is a multi gigabyte archive with no cross
+  is no honest bundled figure: the only bulk alternative is a large archive download with no cross
   origin headers and links that expire.
 - **The parent and child tree is self declared.** It is what a registrant said about itself in
   registration. It is not audited and it is not consolidation under an accounting standard. It
@@ -190,8 +391,8 @@ error state.
   after its management contract moved to a different operator. That example is shown on the page
   rather than hidden.
 - **Award lists are top N, never a full enumeration.** One large company's contracts for one year
-  run to dozens of pages and more than ten minutes of paging, and the deep pages are the slowest.
-  The page takes the largest by value, one page, and says so.
+  run to many pages, and the deep pages are the slowest. The page takes the largest by value, one
+  page, and says so.
 - **Comparing two or three companies on one axis is not in this version.** It is specified, and
   it is not claimed anywhere in the interface.
 - **Nothing before federal fiscal year 2008 exists here**, so no figure on this page covers the
@@ -207,14 +408,13 @@ error state.
 
 ## Troubleshooting
 
-**A panel says the source is cold and nothing has happened for twenty seconds.** That is expected
-and the message is literal. The heavy endpoints have been measured between eleven and forty two
-seconds on a cold cache and under two seconds once warm. The request is still open and it has not
-been retried into the ground.
+**A panel says the source is cold and nothing has happened for a while.** That is expected and the
+message is literal. The heavy endpoints are slow on a cold cache and fast once it is warm. The
+request is still open and it has not been retried into the ground.
 
 **A panel says the source did not respond and offers Retry.** Real 502 and 504 responses arrive
-from this API before a 200 on the same query. The page already retried four times with backoff
-before showing you that. Press Retry; it usually lands.
+from this API before a 200 on the same query. The page already tried the request four times in
+all, with backoff, before showing you that. Press Retry; it usually lands.
 
 **The total changed when I changed the award type set.** It should. Three sets, three defensible
 totals, and the badge under every figure names which one produced it.

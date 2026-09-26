@@ -322,11 +322,11 @@ and the values that paint cannot drift apart. The ten claim boundary statements 
 ## Measured, not asserted
 
 These numbers come from the scripts named beside them, on this machine, and they are reproducible
-by running those scripts. The paint and wire figures below are from one run on 2026-09-24.
+by running those scripts. The paint and wire figures below are from one run on 2026-09-26.
 
 | What | Budget | Measured | How |
 |---|---|---|---|
-| First contentful paint, cold cache, Fast 3G | 1.2 s | 0.676 s, median of 9 | `node scripts/gate-fcp.mjs --runs 9` |
+| First contentful paint, cold cache, Fast 3G | 1.2 s | 0.640 s, median of 9 | `node scripts/gate-fcp.mjs --runs 9` |
 | Page on the wire, gzipped | 50 KB | 10,804 B | the same run reports it |
 | Runtime dependencies | 0 | 0 | `dependencies: {}` |
 
@@ -335,12 +335,12 @@ fresh browser context with the HTTP cache disabled, served gzipped over the Fast
 network conditions: 562.5 ms of added latency and 188,744 bytes per second down. `npm run gate:fcp`
 runs the same gate with five loads. The gate runs its own positive control on every invocation,
 which is the same page carrying 400,000 bytes of incompressible padding; in that run the padded page
-measured 2.29 s and the gate failed it, so a green result means the gate is awake rather than
+measured 2.30 s and the gate failed it, so a green result means the gate is awake rather than
 absent.
 
 Two things that budget does not cover, stated because leaving them out would be the misleading
-part. The module graph and the bundled name index are 44 same origin requests fetched after the
-paint, and on that same throttled profile DOMContentLoaded landed at 6.27 s, so the page is
+part. The module graph and the bundled name index are 45 same origin requests fetched after the
+paint, and on that same throttled profile DOMContentLoaded landed at 6.32 s, so the page is
 readable in well under a second and fully interactive several seconds later. And the measurement is of this machine over a
 loopback server with an emulated link, which is a repeatable number rather than a promise about
 any particular reader's phone.

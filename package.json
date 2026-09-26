@@ -1,15 +1,25 @@
 {
   "name": "solebidder",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "description": "Type a federal contractor and see who actually buys from it, how concentrated that book is, and how much of it was awarded with exactly one bidder. Every figure is federal prime award obligations recorded against one parent UEI and its registered child UEIs for one named fiscal year, fetched live from USAspending and badged with the endpoint, the filter method and the source as-of date.",
   "type": "module",
+  "bin": {
+    "solebidder": "src/cli/bin.js"
+  },
   "engines": {
     "node": ">=22"
   },
   "files": [
-    "index.html",
-    "src",
+    "src/analysis",
+    "src/api",
+    "src/cli",
+    "src/contracts",
+    "src/core",
+    "src/identity",
+    "src/query",
+    "src/ui/view-model.js",
+    "src/data/typeahead-index.json",
     "LICENSE"
   ],
   "scripts": {
@@ -28,7 +38,9 @@
     "measure:a11y:selftest": "node scripts/measure-a11y.mjs --selftest",
     "index:refresh": "node scripts/build-typeahead-index.mjs",
     "index:check": "node scripts/build-typeahead-index.mjs --check",
-    "verify": "npm test && npm run gates && npm run build:check"
+    "verify": "npm test && npm run gates && npm run build:check",
+    "verify:ci": "npm test && npm run gate:badges && npm run gate:units && npm run gate:vocabulary && npm run gate:contrast && npm run build:check",
+    "prepublishOnly": "npm run verify:ci"
   },
   "dependencies": {},
   "devDependencies": {},
@@ -42,7 +54,7 @@
     "uei",
     "provenance",
     "zero-dependency",
-    "static-site"
+    "cli"
   ],
   "author": "0xelitesystem",
   "license": "MIT",
@@ -53,5 +65,8 @@
   "homepage": "https://0xelitesystem.github.io/solebidder/",
   "bugs": {
     "url": "https://github.com/0xelitesystem/solebidder/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

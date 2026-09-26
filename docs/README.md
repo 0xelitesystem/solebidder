@@ -14,6 +14,9 @@ Nothing in this directory is served as an entry point.
     src/identity/       name to parent record resolution, and the refusal
     src/analysis/       the shares, the concentration measures, the rollup arithmetic
     src/ui/             the page: the controller, the panels, the charts
+    src/cli/            the command line: the argument parser, the report sequence, the
+                        renderer, the one output sink, and the fetch wrapper. It imports the
+                        same modules the page does and nothing from src/ui but view-model.js
     src/data/           the bundled name index, names and identifiers only
     scripts/            the build, the five gates and the browser measurements. Never loaded
                         by the page and never packed for npm; GitHub Pages serves the
@@ -30,6 +33,18 @@ Nothing in this directory is served as an entry point.
                            disclaimer in index.html
     npm run build:check    regenerate to memory and compare by sha256
     npm run verify         tests, gates and the build check together
+    npm run verify:ci      the same without the paint gate, which needs a browser: the
+                           tests, the four gates that read files, and the build check. This
+                           is what prepublishOnly runs, so a release runner needs no browser
+
+## What the npm package carries
+
+The `files` list in package.json packs the command line and nothing else: `src/cli/` and every
+module it imports, the bundled name index it reads for `suggest`, and the licence. npm adds
+package.json and the README itself. The page, its controller, panels and charts, the scripts,
+the tests and these notes are not in the package. `test/package.test.js` walks the import graph
+from `src/cli/bin.js` and fails when the list packs a file the command does not load or leaves
+out one it does.
 
 ## The five gates, and what each refuses
 

@@ -148,6 +148,18 @@ test('the command imports nothing but its own files and Node itself: no dependen
   }
 });
 
+test('the release workflow pins every action to a full commit, checks the tag, and publishes with provenance', () => {
+  const yml = source('.github/workflows/release.yml');
+  const uses = [...yml.matchAll(/^\s*-?\s*uses:\s*(\S+)/gm)].map((m) => m[1]);
+  assert.ok(uses.length >= 2, 'could not read the actions the workflow uses');
+  for (const u of uses) assert.match(u, /^[a-z0-9-]+\/[a-z0-9-]+@[0-9a-f]{40}$/, 'an action not pinned to a commit: ' + u);
+  assert.match(yml, /persist-credentials: false/);
+  assert.match(yml, /\$want" != "\$GITHUB_REF_NAME"/, 'the tag must match the package version');
+  assert.match(yml, /run: npm publish --dry-run/);
+  assert.match(yml, /run: npm publish --provenance --access public/);
+  assert.match(yml, /id-token: write/);
+});
+
 test('prepublishOnly runs every gate that needs no browser, and the full verify is unchanged', () => {
   assert.equal(pkg.scripts.prepublishOnly, 'npm run verify:ci');
   assert.equal(pkg.scripts.verify, 'npm test && npm run gates && npm run build:check');

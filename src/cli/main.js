@@ -16,7 +16,8 @@
 //   1    a named failure: nothing matched the name, a section failed or its total was suppressed,
 //        the output file was refused, or the environment was refused
 //   2    a usage error
-//   3    a choice is required: more than one parent level record matches the name
+//   3    a choice is required: more than one parent level record matches the name, or the UEI
+//        given with --uei is not one of those that match
 //   130  interrupted
 //
 // A reader that closes the pipe early, as a pager or head does, is not a failure: the run ends

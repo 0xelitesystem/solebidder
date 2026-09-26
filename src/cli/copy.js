@@ -437,8 +437,8 @@ export function helpBlocks(args) {
     def('1', 'A named failure: nothing matched the name, a section failed or was suppressed, the '
       + 'output file was refused, or the environment was refused.'),
     def('2', 'A usage error.'),
-    def('3', 'A choice is required: more than one parent level record matches the name. Run it '
-      + 'again with --uei.'),
+    def('3', 'A choice is required: more than one parent level record matches the name, or the '
+      + 'UEI given with --uei is not one of those that match. Run it again with --uei.'),
     def('130', 'Interrupted.'),
     blank,
     para('What it contacts', 'heading'),

@@ -255,6 +255,19 @@ test('every figure id and section the USAGE chapter names is one a real report p
   for (const m of USAGE_CLI.matchAll(/In the `([a-z]+)` section/g)) assert.ok(sections.has(m[1]), 'no section ' + m[1]);
 });
 
+test('the changelog leads with the package version, and its exit codes and schema are the code\'s', () => {
+  const log = read('docs/CHANGELOG.md');
+  const first = /^## ([0-9]+\.[0-9]+\.[0-9]+)/m.exec(log);
+  assert.ok(first, 'no version heading');
+  assert.equal(first[1], pkg.version, 'the newest changelog entry is not the version package.json ships');
+  const codes = Object.values(EXIT).sort((a, b) => a - b);
+  const listed = codes.slice(0, -1).join(', ') + ' and ' + codes[codes.length - 1];
+  assert.ok(flat(log).includes('Exit codes ' + listed), 'the changelog exit codes are not EXIT: ' + listed);
+  assert.ok(flat(log).includes('schema ' + SCHEMA));
+  assert.ok(flat(log).includes('dropped from every figure here'));
+  assert.ok(read('src/api/hero.js').includes('dropped from every figure here'), 'the note the changelog quotes');
+});
+
 test('every command shown in the README and USAGE is one the parser accepts', () => {
   const lines = [...commandsIn(README), ...commandsIn(USAGE_MD)];
   assert.ok(lines.length >= 12, 'found too few example commands to be reading the right blocks');

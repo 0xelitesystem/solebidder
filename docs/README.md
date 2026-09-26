@@ -22,7 +22,7 @@ Nothing in this directory is served as an entry point.
                         by the page and never packed for npm; GitHub Pages serves the
                         repository root, so these files can still be fetched at their paths.
     test/               node --test, no dependencies
-    docs/               this
+    docs/               this, and CHANGELOG.md, the release notes
 
 ## Commands
 

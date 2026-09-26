@@ -179,6 +179,29 @@ test('a body that is not JSON is not read; the client calls it malformed and doe
   assert.equal(isJsonContentType(null), false);
 });
 
+for (const status of [204, 205]) {
+  test('a ' + status + ' labelled JSON is an answer with nothing in it: malformed once, never retried as a dropped connection', async () => {
+    const s = await serve((req, res) => {
+      res.writeHead(status, { 'content-type': 'application/json' });
+      res.end();
+    });
+    try {
+      const { cliFetch, refusals } = wrap(local(s.port));
+      const r = await cliFetch(URL_);
+      assert.equal(r.status, status, 'the status travels on unchanged');
+      await assert.rejects(() => r.json(), SyntaxError);
+      assert.deepEqual(refusals, []);
+      const client = createClient({ fetch: cliFetch, sleep: async () => {}, random: () => 0 });
+      const result = /** @type {any} */ (await client.request(lastUpdatedRequest(), validateLastUpdated, { what: 'the date' }));
+      assert.equal(result.failure.kind, MALFORMED_RESPONSE, 'the host answered, so it was reached');
+      assert.equal(result.failure.attempts, 1);
+      assert.equal(s.hits.length, 2, 'one request by the wrapper test, one by the client, no retries');
+    } finally {
+      await s.close();
+    }
+  });
+}
+
 test('a server error keeps its status, so the client can retry it as it always has', async () => {
   let n = 0;
   const s = await serve((req, res) => {

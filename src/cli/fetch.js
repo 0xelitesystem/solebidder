@@ -217,6 +217,11 @@ export function createCliFetch(args) {
       refuse('body-cap');
       return refusedBody(response, 'the answer ran over the size cap, so it was not read');
     }
-    return new Response(bytes, { status, statusText: response.statusText, headers: response.headers });
+    // A success status that by definition carries no body cannot be rebuilt around one, even an
+    // empty one: the constructor throws, and the client would read that throw as a dropped
+    // connection and retry a host that answered. It goes on with no body, which the client reads
+    // as a malformed answer, once.
+    const noBody = status === 204 || status === 205;
+    return new Response(noBody ? null : bytes, { status, statusText: response.statusText, headers: response.headers });
   };
 }

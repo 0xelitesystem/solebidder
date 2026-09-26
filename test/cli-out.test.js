@@ -293,3 +293,23 @@ test('--out through the command: the output goes to the file, a notice to standa
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test('--out: the notice holds the path on one line, so a path with spaces in it can be copied whole', async () => {
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'solebidder cli out with spaces '));
+  try {
+    const env = { COLUMNS: '40' };
+    const wrote = await runCli(['claims', '--out', 'a b.txt'], { cwd: dir, env });
+    assert.equal(wrote.code, EXIT.DONE);
+    const file = path.join(dir, 'a b.txt');
+    const lines = wrote.stderr.split('\n');
+    assert.ok(lines.some((l) => l === file + '.'), 'the path and its full stop on one line: ' + JSON.stringify(lines));
+    const refused = await runCli(['claims', '--out', 'a b.txt'], { cwd: dir, env });
+    assert.equal(refused.code, EXIT.FAILURE);
+    assert.ok(refused.stderr.split('\n').some((l) => l === file + '.'), JSON.stringify(refused.stderr));
+    for (const l of refused.stderr.split('\n')) {
+      assert.ok(l.length <= 40 || l === file + '.', 'only the unbreakable path may run past the width: ' + l);
+    }
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});

@@ -332,6 +332,26 @@ function words(text) {
 }
 
 /**
+ * A sentence that names a file, with the path held whole on one line. A path wraps at its own
+ * spaces otherwise, and a reader who copies it from the terminal gets a path that does not exist.
+ * @param {string} sentence
+ * @param {string} file
+ * @returns {import('./out.js').Block[]}
+ */
+function naming(sentence, file) {
+  const at = sentence.lastIndexOf(file);
+  if (at === -1) return words(sentence);
+  return [{
+    kind: 'para',
+    segments: [
+      { text: sentence.slice(0, at) },
+      { text: file, atomic: true },
+      { text: sentence.slice(at + file.length) },
+    ],
+  }];
+}
+
+/**
  * Run the command line.
  *
  * Every dependency has a real default, so the installed command calls run() with nothing; the
@@ -387,10 +407,10 @@ export async function run(options = {}) {
           packageRoot: options.packageRoot,
         });
         if (written.ok) {
-          sink.err(NOTICES.wrote(written.path));
+          sink.err(naming(NOTICES.wrote(written.path), written.path));
           return true;
         }
-        sink.err(NOTICES.outRefused[written.reason] + ' ' + NOTICES.notWritten(written.path));
+        sink.err(naming(NOTICES.outRefused[written.reason] + ' ' + NOTICES.notWritten(written.path), written.path));
         return false;
       }
       if (doc.blocks === undefined) sink.raw(/** @type {string} */ (doc.text));

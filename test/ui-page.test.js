@@ -57,7 +57,9 @@ test('THE CONTENT SECURITY POLICY DECLARES EXACTLY ONE NETWORK HOST', () => {
     assert.ok(allowed.has(host), 'an undeclared host appears in the page: ' + host);
   }
   assert.match(policy, /default-src 'self'/);
-  assert.match(policy, /frame-ancestors 'none'/);
+  // frame-ancestors is ignored when a CSP arrives in a meta element (browsers log an error on every load),
+  // so the page must not carry it; framing protection needs an HTTP header, which GitHub Pages does not offer.
+  assert.doesNotMatch(policy, /frame-ancestors/);
   assert.match(policy, /base-uri 'none'/);
 });
 

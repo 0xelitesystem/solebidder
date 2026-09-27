@@ -70,12 +70,13 @@ test('the README request plan is the one requestPlan() computes from the constan
   const plan = requestPlan();
   const s = flat(CLI);
   const must = [
-    'A report makes at most ' + plan.report + ' requests',
+    'A report makes at most ' + plan.report + ' distinct requests',
     'the ' + plan.details + ' largest contracts and one competition record for each',
     plan.dimensions + ' category breakdowns',
     'up to ' + plan.pages + ' pages each of the entity breakdown and the name match',
     'stops after ' + plan.refusal + ' requests',
-    'tried up to ' + plan.attempts + ' times in all',
+    'tried up to ' + plan.attempts + ' times in all, with backoff, and never more, so at most '
+      + plan.report * plan.attempts + ' requests are sent',
     'an answer over ' + plan.capMiB + ' MiB is refused',
     'fetched at most ' + MAX_CONCURRENCY + ' at a time',
     'one line after ' + (COLD_SOURCE_NOTICE_MS / 1000) + ' seconds says so',
@@ -221,8 +222,9 @@ test('the USAGE command line chapter states the limits the code sets', () => {
   const s = flat(USAGE_CLI);
   const plan = requestPlan();
   const must = [
-    'One report makes at most ' + plan.report + ' requests',
-    'after ' + WORDS[COLD_SOURCE_NOTICE_MS / 1000] + ' seconds one line on standard error says the source is cold',
+    'One report makes at most ' + plan.report + ' distinct requests, each tried up to '
+      + WORDS[plan.attempts] + ' times in all, so at most ' + plan.report * plan.attempts + ' requests are sent',
+    'after ' + WORDS[COLD_SOURCE_NOTICE_MS / 1000] + ' seconds one line on standard error says the source has not answered yet',
     'prints the ' + WORDS[NEVER_CLAIMED_COUNT] + ' statements of what this tool never claims',
     'It needs Node ' + pkg.engines.node.replace('>=', '') + ' or later',
     'exits with code ' + EXIT.CHOICE_REQUIRED,

@@ -142,7 +142,7 @@ disclaimer.
 | `--json` | One JSON document, schema `solebidder.cli/1` |
 | `--csv` | One row per figure, with the unit named in every column header and formula safe cells |
 | `--plain` | One complete sentence per figure, for a screen reader or a plain log |
-| `--no-color` | No styling. `NO_COLOR` set to any value does the same |
+| `--no-color` | No styling. `NO_COLOR` set to any non-empty value does the same |
 | `--out <path>` | Write to that file instead of the terminal |
 | `--force` | With `--out`, replace a file that already exists |
 | `-h`, `--help` | The help |
@@ -166,15 +166,16 @@ A pager or `head` that closes the pipe early is not a failure: the command stops
 ### What it contacts, and how many requests
 
 `https://api.usaspending.gov` and nothing else, over HTTPS with certificate checks on. `suggest`,
-`claims`, `--help` and `--version` contact nothing. A report makes at most 60 requests: the date
-the source publishes about itself, the list of records matching the name, the parent profile, its
-registered children, the 40 largest contracts and one competition record for each, obligations by
-fiscal year, 4 category breakdowns, and up to 5 pages each of the entity breakdown and the name
-match. A name that matches more than one parent level record stops after 2 requests. The
-competition records are fetched at most 6 at a time. A request that meets a server error or a
-dropped connection is tried up to 4 times in all, with backoff, and never more. Redirects are
-refused and never followed, an answer over 4 MiB is refused, and an answer that is not JSON is
-refused. Nothing is cached, so every run fetches again, the source date included.
+`claims`, `--help` and `--version` contact nothing. A report makes at most 60 distinct requests:
+the date the source publishes about itself, the list of records matching the name, the parent
+profile, its registered children, the 40 largest contracts and one competition record for each,
+obligations by fiscal year, 4 category breakdowns, and up to 5 pages each of the entity breakdown
+and the name match. A name that matches more than one parent level record stops after 2 requests.
+The competition records are fetched at most 6 at a time. A request that meets a server error or a
+dropped connection is tried up to 4 times in all, with backoff, and never more, so at most 240
+requests are sent. Redirects are refused and never followed, an answer over 4 MiB is refused, and
+an answer that is not JSON is refused. Nothing is cached, so every run fetches again, the source
+date included.
 
 No option and no environment variable points it at another host. If `NODE_TLS_REJECT_UNAUTHORIZED`
 is set to `0`, which switches certificate checks off, the report refuses to run. A proxy from the
@@ -215,8 +216,9 @@ the directory the tool is installed in. Without `--out`, nothing is written to d
 ### Reading it in a terminal
 
 Every badge is a word, `[REPORTED]` or `[COMPUTED]`, so nothing depends on colour. Styling is bold
-only, on headings and badge words, and it is off when the output is not a terminal, when
-`NO_COLOR` is set to anything, or with `--no-color`. Lines wrap at `COLUMNS`, eighty when nothing
+only, on headings and badge words. It is off with `--no-color`, or when `NO_COLOR` is set to any
+non-empty value, even if `FORCE_COLOR` is set. Otherwise it is off when the output is not a
+terminal, unless `FORCE_COLOR` turns it on. Lines wrap at `COLUMNS`, eighty when nothing
 says otherwise, and a figure is never split across two lines. There is no spinner and nothing is
 redrawn: progress is one plain line at a time on standard error and the report is on standard
 output, so redirecting standard output to a file keeps the report alone. When the source is slow
@@ -383,11 +385,11 @@ your IP address, as every request on the internet does, and this User-Agent:
 
 No account, no key and no configuration file. The tool reads only these environment variables:
 `NO_COLOR`, `FORCE_COLOR`, `TERM` and `COLUMNS` for layout, `NODE_TLS_REJECT_UNAUTHORIZED` to refuse
-to run with certificate checks off, and `NODE_USE_ENV_PROXY`, `NODE_OPTIONS`, `HTTPS_PROXY` and
-`NO_PROXY`, the last two in either case, to say when a proxy is in use. It never prints a value it
-read from the environment. Running it through `npx`, or installing it, downloads
-the package from the npm registry; that request is made by npm before the tool starts, and it is
-the only one the tool does not make itself.
+to run with certificate checks off, and `NODE_USE_ENV_PROXY`, `NODE_OPTIONS`, `HTTPS_PROXY`,
+`HTTP_PROXY` and `NO_PROXY`, the last three in either case, to say when a proxy is in use. It never
+prints a value it read from the environment. Running it through `npx`, or installing it, makes npm
+contact the npm registry before the tool starts: for the package metadata and download, and for
+npm's own update and security advisory checks. Those requests are npm's, not this tool's.
 
 ## Known limits
 

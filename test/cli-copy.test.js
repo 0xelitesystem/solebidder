@@ -21,6 +21,7 @@ import { ADVICE_DISCLAIMER, HERO_AWARD_COUNT, FISCAL_YEAR_FLOOR } from '../src/c
 import { MAX_CATEGORY_PAGES } from '../src/api/categories.js';
 import { CATEGORY_PANELS } from '../src/api/dimensions.js';
 import { userAgent } from '../src/cli/fetch.js';
+import { DEFAULT_POLICY } from '../src/query/retry.js';
 import { EXIT } from '../src/cli/main.js';
 import { REPO } from './helpers/fake-client.js';
 import { runCli, NOW } from './helpers/cli-harness.js';
@@ -108,6 +109,9 @@ test('the request plan in --help is computed from the constants that set it', ()
   const plan = requestPlan();
   assert.equal(plan.report, 5 + HERO_AWARD_COUNT + 1 + CATEGORY_PANELS.length + 2 * MAX_CATEGORY_PAGES);
   assert.equal(plan.report, 60);
+  // Each distinct request can be tried up to the retry ceiling, so the wire ceiling is the product.
+  assert.equal(plan.attempts, DEFAULT_POLICY.maxAttempts);
+  assert.equal(plan.report * plan.attempts, 240);
   assert.equal(plan.refusal, 2);
   assert.equal(plan.capMiB, 4);
 });
@@ -128,7 +132,10 @@ test('--help at eighty columns carries everything DESIGN CLI section 0 item 15 a
     '--fy <year>', '--set <set>', '--uei <UEI>', '--json', '--csv', '--plain', '--no-color',
     '--out <path>', '--force', '-h, --help', '--version',
     'https://api.usaspending.gov and nothing else',
-    'at most 60 requests',
+    'at most 60 distinct requests',
+    'tried up to 4 times in all, so at most 240 requests are sent',
+    'Every command except --help and --version also takes',
+    'NO_COLOR set to any non-empty value does the same',
     'stops after 2 requests',
     privacyLine('0.1.0').slice(0, 60),
     ATTRIBUTION,

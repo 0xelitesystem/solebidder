@@ -48,6 +48,10 @@ line showed it was wrong.
 - Failure, source date and change sentences name no surface, because the page and the command line
   print the same copy. The dropped row note says "dropped from every figure here".
 - The Herfindahl method sentence says its formula is printed beside the figure.
+- The waiting line, the timeout sentence and the opening example no longer state a cold query
+  time that no committed script measures, or say the source is cold, which nothing checks. The
+  profile total note no longer points at a control above or panels below, the third route note no
+  longer names the page's control, and the residual note no longer says hundreds of rows were added.
 
 ### Fixed in the documentation
 
@@ -60,6 +64,11 @@ line showed it was wrong.
   not, and USAGE now says so.
 - The fixtures README now describes the recorded API responses truthfully, the developer notes
   count five gates, and no comment claims that scripts/ is never served.
+- USAGE no longer says the dollar share and the one offer cross check agree closely, and no longer
+  says how deep pages, server errors or a retry behave on this API; nothing committed backs those.
+  The request limit is stated as distinct requests with the retry ceiling beside it, the colour
+  rules name a non-empty `NO_COLOR` and `FORCE_COLOR`, and the privacy section names `HTTP_PROXY`
+  and the requests npm makes before the tool starts.
 
 ## 0.1.0 (2026-09-22)
 

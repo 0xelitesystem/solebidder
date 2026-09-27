@@ -51,9 +51,9 @@ free tool for this question. This is that.
 5. Read down. The hero lands first, then the fiscal year spine, then the category panels, which
    are the slowest endpoints and are never allowed to hold up the rest.
 
-If a panel is still waiting after three seconds it says out loud that the source is cold. That is
-true: the same query answers far more slowly on a cold upstream cache than on a warm one. There is
-no spinner anywhere on this page, because a spinner implies progress it cannot see.
+If a panel is still waiting after three seconds it says so, and that USAspending can be slow to
+answer a query it has not answered recently. There is no spinner anywhere on this page, because a
+spinner implies progress it cannot see.
 
 ## Six ways to use it
 
@@ -87,9 +87,9 @@ the government's own award record for the largest few.
 **WHAT YOU LEARN.** The share of the lifetime value across the largest contracts active in the
 year that the record marks NOT COMPETED, with the dollars on both sides of the division. Beside
 it, an independent cross check: the share of those contracts reporting exactly one offer received.
-The two agree closely, and where the record contradicts itself, for example an award reporting
-full and open competition alongside zero offers, that award is shown as reported and excluded from
-the count share with a visible excluded tally.
+Where the record contradicts itself, for example an award reporting full and open competition
+alongside zero offers, that award is shown as reported and excluded from the count share with a
+visible excluded tally.
 
 **THE ACTION.** Stop describing the book as competitively bid without a number. If you are writing
 a note, quote the sentence the page prints, which names the denominator as the largest contracts
@@ -248,19 +248,20 @@ Every option, the exit codes, the request plan, the User-Agent and the privacy l
   failed or was suppressed, the rest of the report still printed, so find the section that says
   it is missing before you quote anything. 2 is a typing mistake, 3 is a choice to make, and 130
   means it was interrupted.
-- **Keep the two streams apart.** The report is on standard output. Progress lines, the cold source
+- **Keep the two streams apart.** The report is on standard output. Progress lines, the waiting
   line and notices are on standard error. Redirecting standard output to a file gives a clean
   document; `--out` does the same and refuses to overwrite a file unless you pass `--force`.
 - **A slow first answer is the source, not the tool.** A name the source has not been asked about
-  lately can take a long time; after three seconds one line on standard error says the source is
-  cold. Nothing is printed until every part has answered or failed. The same command run again
-  soon after is usually faster, because the source's own cache is warm by then.
-- **Be polite to a free public service.** One report makes at most 60 requests. Run reports one
-  after another, never many at once, and keep the output rather than asking again: nothing is
-  cached, so every run fetches everything again.
+  lately can take a long time; after three seconds one line on standard error says the source has
+  not answered yet. Nothing is printed until every part has answered or failed. The same command
+  run again soon after is usually faster, because the source's own cache is warm by then.
+- **Be polite to a free public service.** One report makes at most 60 distinct requests, each tried
+  up to four times in all, so at most 240 requests are sent. Run reports one after another, never
+  many at once, and keep the output rather than asking again: nothing is cached, so every run
+  fetches everything again.
 - **For a screen reader or a log**, `--plain` prints one complete sentence per figure with no
-  indentation. `NO_COLOR` or `--no-color` turns off the only styling there is, bold, and `COLUMNS`
-  sets the wrap width.
+  indentation. A non-empty `NO_COLOR` or `--no-color` turns off the only styling there is, bold,
+  and `COLUMNS` sets the wrap width.
 
 ### Four ways to use it
 
@@ -391,8 +392,7 @@ value together, and never sum shares.
   after its management contract moved to a different operator. That example is shown on the page
   rather than hidden.
 - **Award lists are top N, never a full enumeration.** One large company's contracts for one year
-  run to many pages, and the deep pages are the slowest. The page takes the largest by value, one
-  page, and says so.
+  run to many pages. The page takes the largest by value, one page, and says so.
 - **Comparing two or three companies on one axis is not in this version.** It is specified, and
   it is not claimed anywhere in the interface.
 - **Nothing before federal fiscal year 2008 exists here**, so no figure on this page covers the
@@ -408,13 +408,12 @@ value together, and never sum shares.
 
 ## Troubleshooting
 
-**A panel says the source is cold and nothing has happened for a while.** That is expected and the
-message is literal. The heavy endpoints are slow on a cold cache and fast once it is warm. The
-request is still open and it has not been retried into the ground.
+**A panel says it has no answer yet and nothing has happened for a while.** That is expected. The
+heavy endpoints are slow on a cold cache and fast once it is warm. The request is still open and it
+has not been retried into the ground.
 
-**A panel says the source did not respond and offers Retry.** Real 502 and 504 responses arrive
-from this API before a 200 on the same query. The page already tried the request four times in
-all, with backoff, before showing you that. Press Retry; it usually lands.
+**A panel says the source did not respond and offers Retry.** The page already tried the request
+four times in all, with backoff, before showing you that. Press Retry.
 
 **The total changed when I changed the award type set.** It should. Three sets, three defensible
 totals, and the badge under every figure names which one produced it.

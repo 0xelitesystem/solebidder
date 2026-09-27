@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { parseArgs, cleanText, EXIT } from '../src/cli/main.js';
+import { parseArgs, cleanText, EXIT, proxyInUse } from '../src/cli/main.js';
 import { USAGE } from '../src/cli/copy.js';
 import { runCli, NOW } from './helpers/cli-harness.js';
 
@@ -159,4 +159,32 @@ test('a usage error prints its sentence and the hint on standard error, exits tw
     assert.ok(r.stderr.includes(USAGE.hint.slice(0, 20)), r.stderr);
     assert.equal(r.transport.calls.length, 0);
   }
+});
+
+test('a proxy is named whenever Node would send the report through one, the HTTP proxy included', () => {
+  // Node's fetch reads the lower case name first, and sends an HTTPS request through the HTTP
+  // proxy when no HTTPS proxy is set. The notice follows the same order, or a report goes through
+  // a proxy without saying so.
+  const proxy = 'http://proxy.invalid:8080';
+  const on = { NODE_USE_ENV_PROXY: '1' };
+  for (const env of [
+    { ...on, HTTPS_PROXY: proxy },
+    { ...on, https_proxy: proxy },
+    { ...on, HTTP_PROXY: proxy },
+    { ...on, http_proxy: proxy },
+    { ...on, HTTPS_PROXY: ' ', HTTP_PROXY: proxy },
+    { ...on, HTTP_PROXY: proxy, NO_PROXY: 'localhost' },
+    { ...on, HTTP_PROXY: proxy, no_proxy: '', NO_PROXY: 'api.usaspending.gov' },
+    { NODE_OPTIONS: '--use-env-proxy', http_proxy: proxy },
+  ]) assert.equal(proxyInUse(env), true, JSON.stringify(env));
+  for (const env of [
+    { HTTP_PROXY: proxy },
+    { NODE_USE_ENV_PROXY: 'true', HTTP_PROXY: proxy },
+    { ...on },
+    { ...on, HTTP_PROXY: '' },
+    { ...on, https_proxy: '', HTTPS_PROXY: proxy },
+    { ...on, HTTP_PROXY: proxy, NO_PROXY: 'api.usaspending.gov' },
+    { ...on, HTTP_PROXY: proxy, no_proxy: '.usaspending.gov', NO_PROXY: '' },
+    { ...on, http_proxy: proxy, no_proxy: '*' },
+  ]) assert.equal(proxyInUse(env), false, JSON.stringify(env));
 });

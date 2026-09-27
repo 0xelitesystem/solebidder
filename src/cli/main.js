@@ -251,7 +251,9 @@ export function parseArgs(argv, options = {}) {
 
 /**
  * Whether Node has been asked to send requests through a proxy from the environment, and the one
- * host this tool contacts is not excluded from it.
+ * host this tool contacts is not excluded from it. The names are read the way Node's fetch reads
+ * them: the lower case name first, and for an HTTPS request the HTTP proxy when no HTTPS proxy is
+ * set, because Node sends the request through it then.
  * @param {Record<string, string|undefined>} env
  * @returns {boolean}
  */
@@ -259,10 +261,12 @@ export function proxyInUse(env) {
   const enabled = env.NODE_USE_ENV_PROXY === '1'
     || /(^|\s)--use-env-proxy(\s|=|$)/.test(String(env.NODE_OPTIONS === undefined ? '' : env.NODE_OPTIONS));
   if (!enabled) return false;
-  const proxy = env.HTTPS_PROXY === undefined ? env.https_proxy : env.HTTPS_PROXY;
-  if (typeof proxy !== 'string' || proxy.trim().length === 0) return false;
+  const set = (v) => typeof v === 'string' && v.trim().length > 0;
+  const https = env.https_proxy === undefined ? env.HTTPS_PROXY : env.https_proxy;
+  const proxy = set(https) ? https : (env.http_proxy === undefined ? env.HTTP_PROXY : env.http_proxy);
+  if (!set(proxy)) return false;
   const host = new URL(API_ORIGIN).hostname;
-  const noProxy = env.NO_PROXY === undefined ? env.no_proxy : env.NO_PROXY;
+  const noProxy = env.no_proxy === undefined ? env.NO_PROXY : env.no_proxy;
   for (const entry of String(noProxy === undefined ? '' : noProxy).split(/[\s,]+/)) {
     const e = entry.trim().toLowerCase().replace(/:[0-9]+$/, '').replace(/^\*?\.?/, '');
     if (entry.trim() === '*') return false;

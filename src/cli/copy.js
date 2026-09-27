@@ -13,7 +13,9 @@
 //   The advice disclaimer. It is ADVICE_DISCLAIMER in src/core/constants.js, one copy for the page
 //   footer, the README, USAGE and this tool.
 //   Failure sentences, the as of notice, the cold source notice and every sentence the analysis
-//   and identity layers build. The page prints those too, from the same code.
+//   and identity layers build. The page prints those too, from the same code. Two exceptions:
+//   the subject sentence and the refusal carry a count, which the page prints bare, so here the
+//   subject sentence is rebuilt around a badged count and the refusal names no count at all.
 //   Figures. There is no number in this file that a reader could take for a measurement. The only
 //   digits the command line prints outside a badged figure are fiscal year labels, identifiers,
 //   its own version, and in --help the limits it runs under, each computed from the constant that
@@ -126,6 +128,8 @@ export const LABELS = Object.freeze({
   gapAmount: 'Recorded against this entity',
   categoryRow: 'Recorded against this row',
   curvePoint: 'Cumulative share of the set at this contract',
+  subjectChildren: 'Registered child entities summed with the parent',
+  childrenExpected: 'Registered child entities the source says exist',
 });
 
 /** Progress, one discrete line each, on standard error. Never a spinner. */
@@ -147,8 +151,20 @@ export const PROGRESS = Object.freeze({
 /** Report sentences. */
 export const COPY = Object.freeze({
   /** @param {string} name @param {string} uei */
+  subjectLead: (name, uei) => name + ', parent UEI ' + uei + ', summed with',
+  subjectTail: 'for the fiscal year selected. Parent linkage is self declared in SAM.gov '
+    + 'registration, not SEC consolidation.',
+  subjectTailShort: 'that arrived for the fiscal year selected. Parent linkage is self declared in '
+    + 'SAM.gov registration, not SEC consolidation.',
+  /** @param {string} text */
+  refusal: (text) => 'No single parent record exists for "' + text + '" in this dataset. More '
+    + 'than one parent level record matches. They are not linked to each other, and adding them '
+    + 'together would invent a company that the government record does not contain. The records '
+    + 'are listed with their UEIs so you can choose one deliberately.',
+  /** @param {string} name @param {string} uei */
   choiceByFlag: (name, uei) => 'You chose ' + name + ', UEI ' + uei + ', with the --uei option. '
-    + 'Every figure below is recorded against that UEI family for the fiscal year selected.',
+    + 'Every figure in this report is recorded against that UEI family for the fiscal year '
+    + 'selected.',
   /** @param {number} fy */
   fiscalYearDefault: (fy) => 'Fiscal year FY' + fy + ', the most recently completed fiscal year, '
     + 'chosen by default. Pass --fy to choose another.',
@@ -201,7 +217,7 @@ export const COPY = Object.freeze({
   ueiNotFound: (uei) => 'The UEI given with --uei, ' + uei + ', is not one of the parent level '
     + 'records that match that name in this dataset. It may be registered under a parent rather '
     + 'than being one, or it may sit past the first page of matches, which is the only page read. '
-    + 'The parent level records that do match are listed below.',
+    + 'The parent level records that do match are listed in this output.',
   /** @param {string} date */
   asOf: (date) => 'USAspending publishes this data as current to ' + date + '. That date comes from '
     + 'the source itself, fetched on this run.',
@@ -396,7 +412,8 @@ export function helpBlocks(args) {
     indented(TOOL + ' suggest <text>'),
     indented(TOOL + ' claims'),
     indented(TOOL + ' --help | --version'),
-    indented('Every command also takes --json, --csv, --plain, --no-color, --out <path> and --force.'),
+    indented('Every command except --help and --version also takes --json, --csv, --plain, '
+      + '--no-color, --out <path> and --force.'),
     blank,
     para('Commands', 'heading'),
     def('<name>', 'The report for the parent level record that matches the name: the parent total, '
@@ -423,9 +440,9 @@ export function helpBlocks(args) {
     def('--csv', 'One row per figure, with the unit named in each column header. A cell a '
       + 'spreadsheet could read as a formula starts with a single quote.'),
     def('--plain', 'One complete sentence per figure, for a screen reader or a plain log.'),
-    def('--no-color', 'No text styling. NO_COLOR set to any value does the same. FORCE_COLOR turns '
-      + 'styling on when the output is not a terminal, unless NO_COLOR is set. Styling is only ever '
-      + 'bold: every badge is a word.'),
+    def('--no-color', 'No text styling. NO_COLOR set to any non-empty value does the same. '
+      + 'FORCE_COLOR turns styling on when the output is not a terminal, but a non-empty NO_COLOR '
+      + 'still wins. Styling is only ever bold: every badge is a word.'),
     def('--out <path>', 'Write the output to that file rather than the terminal. An existing file '
       + 'or a link is refused.'),
     def('--force', 'With --out, replace an existing file. A link is still refused.'),
@@ -443,14 +460,16 @@ export function helpBlocks(args) {
     blank,
     para('What it contacts', 'heading'),
     prose(API_ORIGIN + ' and nothing else, over HTTPS with certificate checks on. suggest, claims, '
-      + '--help and --version contact nothing. A report makes at most ', n(plan.report, 'requests'),
-    ': the date the source publishes about itself, the list of records matching the name, the '
-      + 'parent profile, its registered children, the ', n(plan.details, 'largest'), ' contracts and '
+      + '--help and --version contact nothing. A report makes at most ',
+    n(plan.report, 'distinct requests'), ': the date the source publishes about itself, the list '
+      + 'of records matching the name, the parent profile, its registered children, the ',
+    n(plan.details, 'largest'), ' contracts and '
       + 'one competition record for each, obligations by fiscal year, ', n(plan.dimensions, 'category'),
     ' breakdowns, and up to ', n(plan.pages, 'pages'), ' each of the entity breakdown and the name '
       + 'match. A name that matches more than one parent level record stops after ',
     n(plan.refusal, 'requests'), '. A request that meets a server error or a dropped connection is '
-      + 'tried up to ', n(plan.attempts, 'times'), ' in all. Redirects are refused, never followed, '
+      + 'tried up to ', n(plan.attempts, 'times'), ' in all, so at most ',
+    n(plan.report * plan.attempts, 'requests'), ' are sent. Redirects are refused, never followed, '
       + 'and an answer over ', n(plan.capMiB, 'MiB'), ' is refused. Nothing is cached.'),
     prose('If NODE_TLS_REJECT_UNAUTHORIZED is set to zero the report refuses to run. A proxy from '
       + 'the environment is used only when Node is told to use one with NODE_USE_ENV_PROXY, and '

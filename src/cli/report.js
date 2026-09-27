@@ -42,7 +42,7 @@ import { SOURCE_AS_OF_UNAVAILABLE } from '../api/source-date.js';
 import { topRowShare, herfindahlIndex, obligationsByYear } from '../analysis/index.js';
 import { pickCandidate } from '../identity/candidates.js';
 import { reported, METHODS } from '../core/claim.js';
-import { OBLIGATIONS } from '../core/units.js';
+import { OBLIGATIONS, TALLY } from '../core/units.js';
 import { FISCAL_YEAR_FLOOR, AWARD_TYPE_SETS } from '../core/constants.js';
 import { revealSentence, RECEIPT_ROWS, RANKED_ROWS } from '../ui/view-model.js';
 import { COPY, TITLES, LABELS, PROGRESS } from './copy.js';
@@ -220,7 +220,9 @@ export async function gatherReport(args) {
       kind: 'refusal',
       records: refusal.splitRecords.map((c) => ({ name: c.name, uei: c.uei })),
       sections: [section('refusal', TITLES.refusal, [
-        { t: 'text', text: refusal.sentence },
+        // The identity layer's sentence carries the count bare, so the refusal is worded here
+        // with none. The records are listed next, each with its identifier.
+        { t: 'text', text: COPY.refusal(refusal.queryText) },
         { t: 'subheading', text: TITLES.records },
         ...refusal.splitRecords.map((c) => recordItem(c)),
         { t: 'gap' },
@@ -286,7 +288,6 @@ export async function gatherReport(args) {
       uei: identity.uei,
       level: identity.level,
       chosenHow: identity.chosenHow,
-      subjectSentence: identity.subjectSentence,
       choiceSentence,
       rollupComplete: identity.rollupComplete,
       alternateNames: [...identity.alternateNames],
@@ -330,9 +331,37 @@ async function loadHero(api, identity, signal, onCold) {
  * ---------------------------------------------------------------------------------------- */
 
 function subjectSection(identity, choiceSentence, query, subject) {
+  // The subject sentence with its count as a badged figure, where the identity layer's sentence
+  // carries it bare. The children endpoint reports the list for the explicit fiscal year and takes
+  // no award type filter, which is what the reconciliation's own child count says too.
+  const meta = {
+    fiscalYear: identity.fiscalYear, awardTypeSetId: 'all', sourceAsOf: identity.sourceAsOf,
+  };
+  const children = reported(identity.childCount, TALLY, METHODS.RECIPIENT_CHILDREN, {
+    ...meta, tallyNoun: 'registered child entity',
+  });
   /** @type {Item[]} */
   const items = [
-    { t: 'text', text: identity.subjectSentence },
+    {
+      t: 'reveal',
+      id: 'subjectChildren',
+      label: LABELS.subjectChildren,
+      lead: COPY.subjectLead(identity.name, identity.uei),
+      claim: children,
+      tail: identity.rollupComplete ? COPY.subjectTail : COPY.subjectTailShort,
+    },
+  ];
+  if (!identity.rollupComplete) {
+    items.push({
+      t: 'figure',
+      id: 'childrenExpected',
+      label: LABELS.childrenExpected,
+      claim: reported(identity.childrenExpected, TALLY, METHODS.RECIPIENT_CHILDREN, {
+        ...meta, tallyNoun: 'expected registered child entity',
+      }),
+    });
+  }
+  items.push(
     { t: 'text', text: choiceSentence },
     {
       t: 'text',
@@ -340,7 +369,7 @@ function subjectSection(identity, choiceSentence, query, subject) {
         ? COPY.fiscalYearChosen(identity.fiscalYear, identity.fiscalYear === query.latestFiscalYear)
         : COPY.fiscalYearDefault(identity.fiscalYear),
     },
-  ];
+  );
   items.push({ t: 'text', text: COPY.awardTypeSet(AWARD_TYPE_SETS[identity.awardTypeSetId]) });
   if (subject.detail && subject.detail.noFederalAwards && subject.detail.sentence) {
     items.push({ t: 'text', text: subject.detail.sentence });

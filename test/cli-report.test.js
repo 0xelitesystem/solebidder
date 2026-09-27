@@ -13,8 +13,14 @@ import { COPY, NOTICES, ATTRIBUTION, INDEPENDENCE, SCHEMA, requestPlan } from '.
 import { ADVICE_DISCLAIMER, COLD_SOURCE_NOTICE } from '../src/core/constants.js';
 import { NEVER_CLAIMED_ITEMS } from '../src/core/never-claimed.js';
 import { SOURCE_AS_OF_UNAVAILABLE } from '../src/api/source-date.js';
+import { createApi } from '../src/api/api.js';
+import { createClient } from '../src/query/client.js';
+import { gatherReport } from '../src/cli/report.js';
+import { reportBlocks } from '../src/cli/render.js';
+import { layout } from '../src/cli/out.js';
 import {
   runCli, healthyRoutes, scripted, recorded, syntheticAwardSearch, syntheticCategory, PARENT_UEI,
+  cliTransport,
 } from './helpers/cli-harness.js';
 
 /** A character from its code point. Nothing above the ASCII range is written raw in this file. */
@@ -40,7 +46,7 @@ function unsafeIn(text) {
 test('MORE THAN ONE PARENT RECORD: the refusal sentence, every parent name with its UEI, no amount, exit three', async () => {
   const r = await runCli(['lockheed', 'martin']);
   assert.equal(r.code, EXIT.CHOICE_REQUIRED);
-  assert.match(r.stdout.replace(/\s+/g, ' '), /No single parent record exists for "lockheed martin" in this dataset\. 16 separate parent/);
+  assert.match(r.stdout.replace(/\s+/g, ' '), /No single parent record exists for "lockheed martin" in this dataset\. More than one parent level record matches\./);
   const list = recorded('recipient-list-lockheed.json').results.filter((row) => row.recipient_level === 'P');
   assert.equal(list.length, 16);
   for (const row of list) assert.ok(r.stdout.includes(row.name + ', UEI ' + row.uei), row.uei);
@@ -51,6 +57,79 @@ test('MORE THAN ONE PARENT RECORD: the refusal sentence, every parent name with 
   assert.equal(r.transport.calls.length, requestPlan().refusal, 'the date and the list, nothing more');
   assert.deepEqual(r.transport.calls.map((c) => c.method + ' ' + c.path),
     ['GET /api/v2/awards/last_updated/', 'POST /api/v2/recipient/']);
+});
+
+/**
+ * The prose left once every badged figure and every twelve character identifier is taken out.
+ * @param {string} text
+ * @returns {string}
+ */
+const unbadged = (text) => text.replace(/\s+/g, ' ')
+  .replace(/[0-9][0-9,.]*(?: [a-z]+)+ \[(?:REPORTED|COMPUTED)\]/g, '')
+  .replace(/\b[A-Z0-9]{12}\b/g, '');
+
+/**
+ * One passage of the output, from its first words to the words that end it, on one line.
+ * @param {string} out @param {string} start @param {string} end
+ * @returns {string}
+ */
+function passage(out, start, end) {
+  const flat = out.replace(/\s+/g, ' ');
+  const i = flat.indexOf(start);
+  const j = flat.indexOf(end, i);
+  assert.ok(i >= 0 && j > i, 'no passage from ' + start + ' to ' + end);
+  return flat.slice(i, j + end.length);
+}
+
+test('THE REFUSAL AND THE SUBJECT SENTENCE print no count outside a badged figure', async () => {
+  const refusal = await runCli(['lockheed', 'martin']);
+  const statement = passage(refusal.stdout, 'No single parent record exists for "', 'deliberately.');
+  assert.ok(!/[0-9]/.test(unbadged(statement)), statement);
+
+  const report = await runCli([...UEI_ARGS, '--fy', '2025']);
+  const children = recorded('recipient-children-fy2025.json').length;
+  const sentence = passage(report.stdout, ', parent UEI ' + PARENT_UEI, 'not SEC consolidation.');
+  assert.ok(sentence.includes('summed with ' + children + ' registered child entities [REPORTED] for the '
+    + 'fiscal year selected.'), sentence);
+  assert.ok(!/[0-9]/.test(unbadged(sentence)), sentence);
+
+  // In JSON the count is a badged figure with the sentence around it, and no string carries it bare.
+  const doc = JSON.parse((await runCli([...UEI_ARGS, '--fy', '2025', '--json'])).stdout);
+  const figure = doc.sections.find((sec) => sec.id === 'subject').items[0];
+  assert.equal(figure.id, 'subjectChildren');
+  assert.equal(figure.badge, 'REPORTED');
+  assert.equal(figure.unit, 'tally');
+  assert.equal(figure.value, children);
+  assert.ok(!/[0-9]/.test(figure.sentence.tail + figure.sentence.lead.replace(PARENT_UEI, '')));
+  assert.ok(!('subjectSentence' in doc.identity));
+  const refused = JSON.parse((await runCli(['lockheed', 'martin', '--json'])).stdout);
+  for (const item of refused.sections.flatMap((sec) => sec.items)) {
+    if (item.type === 'text') assert.ok(!/[0-9]/.test(item.text), item.text);
+  }
+});
+
+test('a rollup that came back short badges both counts: the children that arrived and the number expected', async () => {
+  const transport = cliTransport();
+  const api = createApi({ client: createClient({ fetch: transport.fetch, sleep: async () => {} }) });
+  const short = {
+    ...api,
+    loadSubject: async (args) => {
+      const s = await api.loadSubject(args);
+      return { ...s, identity: { ...s.identity, childrenExpected: s.identity.childCount + 3, rollupComplete: false } };
+    },
+  };
+  const report = await gatherReport({
+    api: short, text: 'lockheed martin', fiscalYear: 2025, fyChosen: 'flag', latestFiscalYear: 2026,
+    awardTypeSetId: 'contracts', uei: PARENT_UEI, signal: new AbortController().signal,
+  });
+  const out = layout(reportBlocks(report), { width: 80, colour: false });
+  const flat = out.replace(/\s+/g, ' ');
+  const children = recorded('recipient-children-fy2025.json').length;
+  const sentence = passage(out, ', parent UEI ' + PARENT_UEI, 'not SEC consolidation.');
+  assert.ok(sentence.includes(children + ' registered child entities [REPORTED] that arrived'), sentence);
+  assert.ok(!/[0-9]/.test(unbadged(sentence)), sentence);
+  assert.ok(flat.includes(': ' + (children + 3) + ' expected registered child entities [REPORTED]'), flat.slice(0, 600));
+  assert.ok(flat.includes(COPY.rollupIncomplete));
 });
 
 test('the refusal as JSON names every record and carries no figure', async () => {
@@ -493,6 +572,10 @@ test('a proxy from the environment is named when Node is told to use it, and its
   assert.ok(!on.stderr.includes('secret') && !on.stderr.includes('proxy.invalid'));
   const flagged = await runCli(['lockheed', 'martin'], { env: { NODE_OPTIONS: '--use-env-proxy', https_proxy: proxy } });
   assert.ok(flagged.stderr.includes('A proxy is set'));
+  // With no HTTPS proxy set, Node sends the HTTPS requests through the HTTP proxy.
+  const httpOnly = await runCli(['lockheed', 'martin'], { env: { NODE_USE_ENV_PROXY: '1', HTTP_PROXY: proxy } });
+  assert.ok(httpOnly.stderr.replace(/\s+/g, ' ').includes(NOTICES.proxyInUse));
+  assert.ok(!httpOnly.stderr.includes('secret') && !httpOnly.stderr.includes('proxy.invalid'));
   for (const env of [
     { HTTPS_PROXY: proxy },
     { NODE_USE_ENV_PROXY: '1' },

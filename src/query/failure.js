@@ -69,9 +69,8 @@ export const FAILURE_SPEC = Object.freeze({
     kind: TIMEOUT,
     retryable: true,
     suppressesFigures: true,
-    template: 'USAspending did not answer in time for {what}. A cold query on this endpoint has '
-      + 'been measured at tens of seconds, and the answer is usually fast once the source has '
-      + 'warmed. Retry.',
+    template: 'USAspending did not answer in time for {what}. It can be slow to answer a query it '
+      + 'has not answered recently. Retry.',
   }),
   [RATE_LIMITED]: Object.freeze({
     kind: RATE_LIMITED,

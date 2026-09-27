@@ -70,8 +70,8 @@ export const HERO_AWARD_COUNT = 40;
 export const COLD_SOURCE_NOTICE_MS = 3000;
 
 /** The sentence that replaces a bare spinner. DESIGN 6.3. */
-export const COLD_SOURCE_NOTICE = 'Still loading from USAspending. The source is cold for this '
-  + 'query and cold queries have been measured at tens of seconds.';
+export const COLD_SOURCE_NOTICE = 'USAspending has not answered yet. It can be slow to answer a '
+  + 'query it has not answered recently.';
 
 /**
  * The advice disclaimer, in ONE copy. The build writes it into the page footer from here, the

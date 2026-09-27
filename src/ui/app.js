@@ -712,9 +712,9 @@ export function boot(doc, deps = {}) {
     if (!regionNode || typeof regionNode.querySelector !== 'function') return;
     const existing = regionNode.querySelector('.skeleton');
     if (!existing) return;
-    existing.appendChild(prose(doc, 'p', 'The source is cold for ' + what
-      + ' and a cold query on this endpoint has been measured at tens of seconds. Nothing is '
-      + 'wrong; the request is still open and it has not been retried into the ground.',
+    existing.appendChild(prose(doc, 'p', 'No answer yet for ' + what + '; the source can be slow '
+      + 'to answer a query it has not answered recently. Nothing is wrong; the request is still '
+      + 'open and it has not been retried into the ground.',
     { class: 'cold' }));
   }
 

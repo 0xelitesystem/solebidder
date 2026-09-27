@@ -47,7 +47,7 @@ const identity = testIdentity();
 const awardRows = testAwardRows();
 const awardDetails = testAwardDetails();
 
-test('a waiting tile says what it is waiting for, and a cold one says the source is cold', () => {
+test('a waiting tile says what it is waiting for, and a slow one says the source has not answered yet', () => {
   assert.match(skeletonPanel(doc, 'the agency breakdown').textContent, /agency breakdown/);
   assert.match(skeletonPanel(doc, 'x').getAttribute('role'), /status/);
   assert.ok(coldPanel(doc, 'the agency breakdown').textContent.includes(COLD_SOURCE_NOTICE));

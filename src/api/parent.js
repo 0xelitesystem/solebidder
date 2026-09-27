@@ -36,8 +36,8 @@ import { AWARD_TYPE_SETS } from '../core/constants.js';
  * different number from the government's own page can see why.
  */
 export const PROFILE_TOTAL_SET_NOTE = 'This endpoint takes a fiscal year and no award type '
-  + 'filter, so this figure covers every award type regardless of the award type control above. '
-  + 'The category and award panels below honour the control, which is why their totals differ '
+  + 'filter, so this figure covers every award type, whatever award type set was chosen. '
+  + 'The category and award figures use the chosen set, which is why their totals differ '
   + 'from this one.';
 
 /** What the page says when the answer is nothing. */

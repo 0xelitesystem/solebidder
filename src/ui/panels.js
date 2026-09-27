@@ -602,8 +602,8 @@ export function hookPanel(doc, args) {
   if (args.pending) {
     kids.push(prose(doc, 'p', 'Asking USAspending how the federal contract dollars recorded '
       + 'against one well known prime contractor were split between the departments that bought '
-      + 'from it. One live request from your own browser to the government host, and a cold one '
-      + 'on this endpoint has been measured in tens of seconds.'));
+      + 'from it. One live request from your own browser to the government host, which can be slow '
+      + 'to answer a query it has not answered recently.'));
     return el(doc, 'div', {}, kids);
   }
 

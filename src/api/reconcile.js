@@ -42,15 +42,15 @@ import { sumRows } from './categories.js';
 
 /** The note that rides on every residual, whatever its size. */
 export const RESIDUAL_NOTE = 'This is the difference between two figures for the same entity and '
-  + 'the same fiscal year, computed by adding hundreds of rows in binary floating point. It is '
+  + 'the same fiscal year, computed by adding rows in binary floating point. It is '
   + 'shown rather than rounded away, because a difference a reader can reproduce is evidence '
   + 'that the arithmetic above it was actually performed.';
 
 /** The note on the third arm when the award type control makes it answer a different question. */
 export const ARM_NOT_COMPARABLE_NOTE = 'The profile and children endpoints take a fiscal year and '
-  + 'no award type filter, so they cover every award type. This figure honours the award type '
-  + 'control, so it answers a different question and it is not differenced against them. Select '
-  + 'the all award types set to compare the three on the same basis.';
+  + 'no award type filter, so they cover every award type. This figure uses the chosen award type '
+  + 'set, so it answers a different question and it is not differenced against them. To compare '
+  + 'the three on the same basis, use the all award types set.';
 
 /**
  * @typedef {Object} ReconciliationArm

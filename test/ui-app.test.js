@@ -459,7 +459,7 @@ test('the spine asks for a decade, and never for a rolling window', async () => 
   assert.equal(typeof asked.fiscalYear, 'number');
 });
 
-test('A WAITING TILE SAYS THE SOURCE IS COLD, and there is no spinner anywhere on this page', async () => {
+test('A WAITING TILE SAYS THE SOURCE HAS NOT ANSWERED YET, and there is no spinner anywhere on this page', async () => {
   let release;
   const gate = new Promise((resolve) => { release = resolve; });
   const api = stubApi({
@@ -476,8 +476,10 @@ test('A WAITING TILE SAYS THE SOURCE IS COLD, and there is no spinner anywhere o
   await settle();
 
   const mix = doc.getElementById('panel-mix');
-  assert.match(mix.textContent, /source is cold/);
-  assert.match(mix.textContent, /tens of seconds/);
+  assert.match(mix.textContent, /No answer yet for the awarding agency breakdown/);
+  assert.match(mix.textContent, /can be slow to answer a query it has not answered recently/);
+  // A time nothing committed measures, and a cause nothing checked, are not stated.
+  assert.doesNotMatch(mix.textContent, /tens of seconds|measured|is cold/);
   assert.doesNotMatch(mix.textContent, /spinner|please wait/i);
   release();
   await settle();

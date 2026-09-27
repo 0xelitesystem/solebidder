@@ -82,17 +82,25 @@ const JOINERS = cls([0x200c, 0x200d]);
 /** A word character on either side of a joiner. */
 const WORD = '[\\p{L}\\p{M}\\p{N}]';
 
-/** Whole control sequences, removed before the leftover characters are stripped. */
+/**
+ * Whole control sequences, removed before the leftover characters are stripped.
+ *
+ * NO BODY RUNS PAST ANOTHER INTRODUCER OF ITS OWN PATTERN. The source can send a long run of
+ * introducers with no terminator, and a body that could cross them makes every start scan to the
+ * end of the text: quadratic, on the only thread, while the report renders, where neither the
+ * deadline nor Ctrl+C can reach it. Stopping at the next introducer keeps every pattern linear.
+ * An introducer left without its terminator is still removed, by CONTROLS below.
+ */
 const SEQUENCES = Object.freeze([
   // CSI, seven bit and eight bit: parameters, intermediates, one final byte.
   /\u001b\[[0-?]*[ -/]*[@-~]/g,
   /\u009b[0-?]*[ -/]*[@-~]/g,
   // OSC, ended by BEL or by the string terminator in either form.
   /\u001b\][^\u0007\u001b\u009c]*(?:\u0007|\u001b\\|\u009c)/g,
-  /\u009d[^\u0007\u001b\u009c]*(?:\u0007|\u001b\\|\u009c)/g,
+  /\u009d[^\u0007\u001b\u009c\u009d]*(?:\u0007|\u001b\\|\u009c)/g,
   // DCS, SOS, PM and APC, ended by the string terminator.
   /\u001b[PX^_][^\u001b\u009c]*(?:\u001b\\|\u009c)/g,
-  /[\u0090\u0098\u009e\u009f][^\u001b\u009c]*(?:\u001b\\|\u009c)/g,
+  /[\u0090\u0098\u009e\u009f][^\u001b\u009c\u0090\u0098\u009e\u009f]*(?:\u001b\\|\u009c)/g,
   // Any other escape: intermediates, then one final byte.
   /\u001b[ -/]*[0-~]/g,
 ]);
@@ -189,10 +197,12 @@ const BOLD_OFF = '\u001b[22m';
  * A figure inside a library sentence, a provenance line or a note: a number with the word that
  * follows it, or an amount with its unit noun. These are held together on one line too. The
  * currency symbol is read from the one formatter rather than typed here, so this file does not
- * become a second place that knows it.
+ * become a second place that knows it. The digit run is bounded because source text such as a
+ * long run of "1," would otherwise make every start scan to its end, which is quadratic; no
+ * figure this tool prints comes near the bound.
  */
 const CURRENCY = formatUnitBare(0, OBLIGATIONS).replace(/[0-9.,-]/g, '');
-const PROSE_FIGURE = new RegExp('(?:-?[' + CURRENCY + '])?\\b[0-9][0-9,]*(?:\\.[0-9]+)?'
+const PROSE_FIGURE = new RegExp('(?:-?[' + CURRENCY + '])?\\b[0-9][0-9,]{0,40}(?:\\.[0-9]+)?'
   + ' (?:' + UNIT_SPEC[AWARD_VALUE].noun + '|[A-Za-z]+)', 'g');
 
 /**

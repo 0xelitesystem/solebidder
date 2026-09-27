@@ -15,6 +15,7 @@ import {
   sanitize, escapeForJson, decideColour, decideWidth, layoutParagraph, layout, createOut,
   writeOutFile, DEFAULT_WIDTH, MIN_WIDTH,
 } from '../src/cli/out.js';
+import { csvCell } from '../src/cli/csv.js';
 import { EXIT } from '../src/cli/main.js';
 import { runCli, recordingStream } from './helpers/cli-harness.js';
 
@@ -67,6 +68,31 @@ test('the sanitiser leaves nothing a terminal could act on, for every hostile se
   assert.equal(sanitize(HOSTILE['a right to left override']), 'abcdcba');
   assert.equal(sanitize(HOSTILE['a line separator']), 'one two three');
   assert.equal(sanitize(HOSTILE['a lone joiner']), 'start end');
+});
+
+test('a long hostile run stays linear in the sanitiser, a CSV cell and the layout', () => {
+  // An unterminated run of eight bit introducers, or a long run of "1,", used to make every start
+  // of a pattern scan to the end of the text: about eight seconds at eighty thousand characters,
+  // on the one thread, where neither the deadline nor Ctrl+C can reach it. Linear work on a
+  // hundred thousand characters takes milliseconds; the bound is loose so only that shape fails.
+  const N = 100000;
+  const within = (label, fn) => {
+    const started = performance.now();
+    fn();
+    const ms = performance.now() - started;
+    assert.ok(ms < 1000, label + ' took ' + ms.toFixed(0) + ' ms');
+  };
+  for (const c of [0x90, 0x98, 0x9b, 0x9d, 0x9e, 0x9f]) {
+    const run = String.fromCharCode(c).repeat(N);
+    within('sanitize of U+' + c.toString(16), () => assert.equal(sanitize(run), ''));
+  }
+  within('mixed introducers', () => assert.equal(sanitize('\u0090\u009d'.repeat(N / 2)), ''));
+  within('seven bit introducers', () => assert.equal(sanitize((ESC + ']' + ESC + 'P').repeat(N / 4)), ''));
+  within('a CSV cell', () => assert.equal(csvCell('\u0090'.repeat(N)), '""'));
+  within('a paragraph', () => assert.ok(layoutParagraph([{ text: 'Name ' + '1,'.repeat(N / 2) }], 80).length > 0));
+  // The bound does not reach any figure this tool prints: a large amount still keeps its word.
+  const lines = layoutParagraph([{ text: 'of $123,456,789,012,345.67 obligated in the year' }], 20);
+  assert.ok(lines.some((l) => l.includes('$123,456,789,012,345.67 obligated')), lines.join('|'));
 });
 
 test('printable non ASCII passes untouched: accented names, curly quotes, scripts that need a joiner', () => {
